@@ -50,7 +50,7 @@ class Job(db.Model):
 
     def to_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
+#machine model
 class Machine(db.Model):
     __tablename__ = 'machines'
     id = db.Column(db.Integer, primary_key=True)
