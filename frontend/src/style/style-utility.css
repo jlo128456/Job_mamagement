@@ -1,0 +1,51 @@
+/* ======================= */
+/* Utility & Defaults     */
+/* ======================= */
+input,
+button,
+select,
+textarea {
+  min-height: 48px;
+}
+
+/* ======================= */
+/* Button Styling          */
+/* ======================= */
+button:not(#loginForm button) {
+  width: auto;
+  padding: 5px 10px;
+  font-size: 0.9em;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover:not(#loginForm button) {
+  background-color: #0056b3;
+}
+
+#backToDashboard {
+  background-color: #6c757d;
+}
+
+#backToDashboard:hover {
+  background-color: #545b62;
+}
+
+.remove-machine {
+  background-color: #dc3545;
+  color: white;
+  margin-top: 5px;
+}
+
+.remove-machine:hover {
+  background-color: #b02a37;
+}
+
+#clearSignature {
+  margin-top: 10px;
+  display: block;
+}
