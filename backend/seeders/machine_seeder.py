@@ -1,4 +1,6 @@
 # seed_machines()
+from models.models import db, Machine
+
 def seed_machines():
     machines = [
         Machine(machine_id="MX100", name="Compact Power Unit", type="Electrical", status="available"),

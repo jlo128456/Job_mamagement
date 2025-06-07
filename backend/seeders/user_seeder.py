@@ -1,3 +1,7 @@
+from models.models import db, User
+from werkzeug.security import generate_password_hash
+
+
 def seed_users():
     users = [
         User(id=1001, email="admin1@example.com", password=..., role="admin"),
