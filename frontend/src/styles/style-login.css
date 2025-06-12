@@ -1,0 +1,77 @@
+/* ======================= */
+/* LOGIN CARD ONLY         */
+/* ======================= */
+#loginForm {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  padding: 2.5rem;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  transition: box-shadow 0.3s ease;
+}
+
+#loginForm h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #222;
+}
+
+#loginForm .login-subtitle {
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Inputs */
+#loginForm input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+#loginForm input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Enhanced Login Button */
+#loginForm button[type="submit"] {
+  width: 100%;
+  padding: 0.85rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#loginForm button[type="submit"]:hover {
+  background-color: #0056b3;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Optional error styling */
+#loginForm .error {
+  color: red;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}

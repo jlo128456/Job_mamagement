@@ -58,12 +58,32 @@ export function LoginModal({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
-  const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  const handleSubmit = e => {
+  const handleChange = e =>
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!form.email || !form.password) return setError('Please fill in both fields.');
     setError('');
-    onLogin && onLogin(form);
+
+    try {
+      const res = await fetch('/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Login failed');
+      } else {
+        console.log('Logged in:', data);
+        onLogin && onLogin(data); //  Pass the user object to App
+      }
+    } catch (err) {
+      setError('Network error');
+    }
   };
 
   return (
