@@ -1,9 +1,8 @@
-// placeholder for CreateJobModal.js// src/components/CreateJobModal.js
+// src/components/CreateJobModal.js
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { populateAdminJobs } from '../dashboard/admin'; // optional if needed
 
-export default function CreateJobModal({ isOpen, onClose }) {
+function CreateJobModal({ isOpen, onClose }) {
   const { API_BASE_URL, jobs, setJobs } = useContext(AppContext);
 
   const [formData, setFormData] = useState({
@@ -15,24 +14,23 @@ export default function CreateJobModal({ isOpen, onClose }) {
     role: 'contractor'
   });
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_BASE_URL}/jobs`, {
+      const res = await fetch(`${API_BASE_URL}/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
-      if (!response.ok) throw new Error(`Error creating job: ${response.status}`);
-      const newJob = await response.json();
+      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      const newJob = await res.json();
       setJobs([...jobs, newJob]);
-      onClose(); // Close the modal
+      onClose();
       setFormData({
         work_order: '',
         customer_name: '',
@@ -43,7 +41,7 @@ export default function CreateJobModal({ isOpen, onClose }) {
       });
     } catch (err) {
       console.error("Create job failed:", err);
-      alert("Failed to create job, see console.");
+      alert("Failed to create job.");
     }
   };
 
@@ -69,3 +67,5 @@ export default function CreateJobModal({ isOpen, onClose }) {
     </div>
   );
 }
+
+export default CreateJobModal;

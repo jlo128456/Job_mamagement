@@ -64,3 +64,25 @@ export async function deleteJob(id, API_BASE_URL) {
   if (!res.ok) throw new Error('Delete failed');
   return true;
 }
+
+export async function moveJobToInProgress(jobId) {
+  try {
+    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/jobs/${jobId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'In Progress' }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to move job to in progress: ${res.status}`);
+    }
+
+    const updatedJob = await res.json();
+    return updatedJob;
+  } catch (error) {
+    console.error('Error updating job status:', error);
+    alert('Unable to update job status.');
+  }
+}
