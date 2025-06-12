@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { Link } from 'react-router-dom';
 //  Forgot Password Modal
 export function ForgotPasswordModal({ onSubmit }) {
   const [email, setEmail] = useState('');
@@ -17,7 +17,6 @@ export function ForgotPasswordModal({ onSubmit }) {
     </div>
   );
 }
-
 //  Reset Password Modal
 export function ResetPasswordModal({ onSubmit }) {
   const [password, setPassword] = useState('');
@@ -35,7 +34,6 @@ export function ResetPasswordModal({ onSubmit }) {
     </div>
   );
 }
-
 //  Signup Modal
 export function SignupModal({ onSignup }) {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -56,22 +54,46 @@ export function SignupModal({ onSignup }) {
     </div>
   );
 }
-
-//  Login Modal
 export function LoginModal({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+
   const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   const handleSubmit = e => {
     e.preventDefault();
-    if (onLogin) onLogin(form);
+    if (!form.email || !form.password) return setError('Please fill in both fields.');
+    setError('');
+    onLogin && onLogin(form);
   };
+
   return (
-    <div className="modal">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="email" name="email" placeholder="Email" required onChange={handleChange} />
-        <input type="password" name="password" placeholder="Password" required onChange={handleChange} />
+    <div className="login-overlay">
+      <form id="loginForm" onSubmit={handleSubmit}>
+        <h2>Login</h2>
+        <p className="login-subtitle">Please enter your credentials</p>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          required
+        />
         <button type="submit">Login</button>
+        {error && <p className="error">{error}</p>}
+        <div className="login-links">
+          <Link to="/reset-password">Forgot Password?</Link>
+          <span> | </span>
+          <Link to="/register">Register New User</Link>
+        </div>
       </form>
     </div>
   );
