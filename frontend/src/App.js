@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AppProvider, AppContext } from './context/AppContext';
 import LayoutHeaderFooter from './components/layoutHeaderFooter';
 import AdminDashboard from './components/AdminDashboard';
@@ -9,6 +9,7 @@ import { LoginModal } from './components/modals/AuthModals';
 function AppContent() {
   const { user, setUser, API_BASE_URL, setJobs, pollingInterval, setPollingInterval } = useContext(AppContext);
   const [role, setRole] = useState(null);
+  const navigate = useNavigate(); //  needed for programmatic redirect
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -27,18 +28,22 @@ function AppContent() {
     return () => pollingInterval && (clearInterval(pollingInterval), setPollingInterval(null));
   }, [API_BASE_URL, pollingInterval, setJobs, setPollingInterval]);
 
-  const handleLogin = ({ email }) => {
-    const roleMap = {
-      'admin@example.com': 'admin',
-      'contractor@example.com': 'contractor',
-      'tech@example.com': 'technician'
-    };
-    if (roleMap[email]) {
-      setUser({ id: '1', email }); setRole(roleMap[email]);
-    } else alert("Login failed");
+  const handleLogin = (user) => {
+    if (user?.email && user?.role) {
+      setUser(user);
+      setRole(user.role);
+      navigate(`/${user.role}`); //  redirect user based on their role
+    } else {
+      alert("Login failed");
+    }
   };
 
-  const handleLogout = () => { setUser(null); setRole(null); };
+  const handleLogout = () => {
+    setUser(null);
+    setRole(null);
+    navigate('/login'); // optional: return to login page after logout
+  };
+
   const handleJobComplete = (id) => alert(`Job ${id} marked complete.`);
 
   return (
@@ -49,24 +54,28 @@ function AppContent() {
       backgroundRepeat: 'no-repeat',
       minHeight: '100vh'
     }}>
-      <Router>
-        {user && <LayoutHeaderFooter />}
-        <Routes>
-          <Route path="/login" element={<LoginModal onLogin={handleLogin} />} />
-          {user && role === 'admin' && <Route path="/admin" element={<AdminDashboard onLogout={handleLogout} />} />}
-          {user && role === 'contractor' && (
-            <Route path="/contractor" element={<SharedDashboard role="contractor" onLogout={handleLogout} onComplete={handleJobComplete} />} />
-          )}
-          {user && role === 'technician' && (
-            <Route path="/technician" element={<SharedDashboard role="technician" onLogout={handleLogout} onComplete={handleJobComplete} />} />
-          )}
-          <Route path="*" element={<Navigate to={user ? `/${role}` : '/login'} />} />
-        </Routes>
-      </Router>
+      <LayoutHeaderFooter show={!!user} />
+      <Routes>
+        <Route path="/login" element={<LoginModal onLogin={handleLogin} />} />
+        {user && role === 'admin' && <Route path="/admin" element={<AdminDashboard onLogout={handleLogout} />} />}
+        {user && role === 'contractor' && (
+          <Route path="/contractor" element={<SharedDashboard role="contractor" onLogout={handleLogout} onComplete={handleJobComplete} />} />
+        )}
+        {user && role === 'technician' && (
+          <Route path="/technician" element={<SharedDashboard role="technician" onLogout={handleLogout} onComplete={handleJobComplete} />} />
+        )}
+        <Route path="*" element={<Navigate to={user ? `/${role}` : '/login'} />} />
+      </Routes>
     </div>
   );
 }
 
 export default function App() {
-  return <AppProvider><AppContent /></AppProvider>;
+  return (
+    <AppProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AppProvider>
+  );
 }

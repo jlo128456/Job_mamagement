@@ -63,11 +63,15 @@ export function LoginModal({ onLogin }) {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.email || !form.password) return setError('Please fill in both fields.');
+    if (!form.email || !form.password) {
+      setError('Please fill in both fields.');
+      return;
+    }
+
     setError('');
 
     try {
-      const res = await fetch('/users/login', {
+      const res = await fetch(`${process.env.REACT_APP_API}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -79,7 +83,7 @@ export function LoginModal({ onLogin }) {
         setError(data.error || 'Login failed');
       } else {
         console.log('Logged in:', data);
-        onLogin && onLogin(data); //  Pass the user object to App
+        onLogin && onLogin(data); // Pass user back to parent
       }
     } catch (err) {
       setError('Network error');
