@@ -1,8 +1,5 @@
-/* ======================= */
-/* General Layout Styles   */
-/* ======================= */
-main,
-.dashboard-container {
+/* ===== General Layout ===== */
+main, .dashboard-container {
   width: 100%;
   max-width: 1200px;
   padding: 2rem;
@@ -13,14 +10,15 @@ main,
   gap: 20px;
 }
 
-/* ======================= */
-/* Header                  */
-/* ======================= */
-header {
+/* ===== Header ===== */
+header, footer {
   width: 100%;
-  color: #000;
-  padding: 1.5rem 0;
   text-align: center;
+  padding: 1.5rem 0;
+}
+
+header {
+  color: #000;
 }
 
 header h1 {
@@ -28,17 +26,14 @@ header h1 {
   margin: 0.5rem 0;
 }
 
-header p {
-  font-size: 1.1rem;
+header p, footer p {
   margin: 0;
+  font-size: 1.1rem;
+  color: #6c757d;
 }
 
-/* ======================= */
-/* Views                   */
-/* ======================= */
-#adminView,
-#contractorView,
-#techView {
+/* ===== Dashboard Views ===== */
+#adminView, #contractorView, #techView {
   display: none;
   flex-direction: column;
   align-items: center;
@@ -47,13 +42,11 @@ header p {
   max-width: 800px;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   gap: 20px;
 }
 
-/* ======================= */
-/* Job Cards & List        */
-/* ======================= */
+/* ===== Job Cards ===== */
 .job-list {
   width: 100%;
   display: flex;
@@ -66,49 +59,72 @@ header p {
   padding: 1rem;
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .complete-btn {
-  background-color: #28a745;
-  color: white;
+  background: #28a745;
+  color: #fff;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
-/* ======================= */
-/* Table Styling           */
-/* ======================= */
-.table-responsive {
+/* ===== Table ===== */
+.table-wrapper {
   width: 100%;
   overflow-x: auto;
+  margin-top: 1rem;
+}
+
+table, th, td {
+  border: 1px solid #ccc;
+  border-collapse: collapse;
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
   margin-top: 10px;
+  background: #fff;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-table th,
-table td {
-  border: 1px solid #ccc;
-  padding: 10px;
+th, td {
+  padding: 12px 16px;
   text-align: left;
+  vertical-align: middle;
 }
 
-table th {
-  background-color: #f8f9fa;
-  font-weight: bold;
+th {
+  background: #f1f3f5;
+  font-weight: 600;
+  color: #333;
 }
 
-/* ======================= */
-/* Signature & Machines    */
-/* ======================= */
-#signatureCanvas,
-.machine-entry {
+td.actions {
+  white-space: nowrap;
+}
+
+td.actions button {
+  margin-right: 0.5rem;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  background: #007bff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+td.actions button:hover {
+  background: #0056b3;
+}
+
+/* ===== Signature / Machine ===== */
+#signatureCanvas, .machine-entry {
   border-radius: 5px;
 }
 
@@ -124,22 +140,7 @@ table th {
   background: #f8f9fa;
 }
 
-/* ======================= */
-/* Footer                  */
-/* ======================= */
-footer {
-  width: 100%;
-  text-align: center;
-  padding: 2rem 0;
-  font-size: 0.9rem;
-  color: #6c757d;
-  margin-top: auto;
-}
-
-footer p {
-  margin: 0;
-}
-
+/* ===== Footer Image ===== */
 .footer-logo {
   display: block;
   margin: 10px auto 0;
@@ -147,19 +148,25 @@ footer p {
   height: auto;
 }
 
-/* ======================= */
-/* Responsive Fixes        */
-/* ======================= */
+/* ===== Logout Button ===== */
+.logout-btn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.logout-btn:hover {
+  background: #b02a37;
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 600px) {
-  .job-card {
-    flex: 1 1 100%;
-  }
-
-  header h1 {
-    font-size: 1.8rem;
-  }
-
-  .dashboard-container {
-    padding: 1rem;
-  }
+  .job-card { flex: 1 1 100%; }
+  header h1 { font-size: 1.8rem; }
+  .dashboard-container { padding: 1rem; }
 }
