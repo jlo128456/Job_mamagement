@@ -9,7 +9,7 @@ import { LoginModal } from './components/modals/AuthModals';
 function AppContent() {
   const { user, setUser, API_BASE_URL, setJobs, pollingInterval, setPollingInterval } = useContext(AppContext);
   const [role, setRole] = useState(null);
-  const navigate = useNavigate(); //  needed for programmatic redirect
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -24,15 +24,24 @@ function AppContent() {
     };
 
     fetchJobs();
-    if (!pollingInterval) setPollingInterval(setInterval(fetchJobs, 10000));
-    return () => pollingInterval && (clearInterval(pollingInterval), setPollingInterval(null));
+    if (!pollingInterval) {
+      const interval = setInterval(fetchJobs, 10000); // 10 seconds
+      setPollingInterval(interval);
+    }
+
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        setPollingInterval(null);
+      }
+    };
   }, [API_BASE_URL, pollingInterval, setJobs, setPollingInterval]);
 
   const handleLogin = (user) => {
     if (user?.email && user?.role) {
       setUser(user);
       setRole(user.role);
-      navigate(`/${user.role}`); //  redirect user based on their role
+      navigate(`/${user.role}`);
     } else {
       alert("Login failed");
     }
@@ -41,31 +50,43 @@ function AppContent() {
   const handleLogout = () => {
     setUser(null);
     setRole(null);
-    navigate('/login'); // optional: return to login page after logout
+    navigate('/login');
   };
 
   const handleJobComplete = (id) => alert(`Job ${id} marked complete.`);
 
   return (
-    <div style={{
-      backgroundImage: "url('/img/mound2.png')",
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      minHeight: '100vh'
-    }}>
-      <LayoutHeaderFooter show={!!user} />
-      <Routes>
-        <Route path="/login" element={<LoginModal onLogin={handleLogin} />} />
-        {user && role === 'admin' && <Route path="/admin" element={<AdminDashboard onLogout={handleLogout} />} />}
-        {user && role === 'contractor' && (
-          <Route path="/contractor" element={<SharedDashboard role="contractor" onLogout={handleLogout} onComplete={handleJobComplete} />} />
-        )}
-        {user && role === 'technician' && (
-          <Route path="/technician" element={<SharedDashboard role="technician" onLogout={handleLogout} onComplete={handleJobComplete} />} />
-        )}
-        <Route path="*" element={<Navigate to={user ? `/${role}` : '/login'} />} />
-      </Routes>
+    <div
+      className="app-container"
+      style={{
+        backgroundImage: "url('/img/mound2.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <LayoutHeaderFooter />
+
+      <main className="main-content" style={{ flex: 1, padding: '1rem' }}>
+        <Routes>
+          <Route path="/login" element={<LoginModal onLogin={handleLogin} />} />
+          {user && role === 'admin' && <Route path="/admin" element={<AdminDashboard onLogout={handleLogout} />} />}
+          {user && role === 'contractor' && (
+            <Route path="/contractor" element={
+              <SharedDashboard role="contractor" onLogout={handleLogout} onComplete={handleJobComplete} />
+            } />
+          )}
+          {user && role === 'technician' && (
+            <Route path="/technician" element={
+              <SharedDashboard role="technician" onLogout={handleLogout} onComplete={handleJobComplete} />
+            } />
+          )}
+          <Route path="*" element={<Navigate to={user ? `/${role}` : '/login'} />} />
+        </Routes>
+      </main>
     </div>
   );
 }
