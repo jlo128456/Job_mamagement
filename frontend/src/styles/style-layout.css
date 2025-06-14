@@ -4,15 +4,18 @@ html, body, #root {
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden; /* Prevent scrollbars */
   font-family: Arial, sans-serif;
+  overflow-x: hidden; /* no horizontal scroll */
 }
 
 /* ===== App Container ===== */
-.app-container {
-  min-height: 100vh;
+.main-content {
+  flex: 1;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
 }
 
 /* ===== Main Content Area ===== */
@@ -21,19 +24,27 @@ html, body, #root {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
 /* ===== Header ===== */
-.main-header,
-.main-footer {
+.main-header {
   text-align: center;
-  padding: 1rem;
-  font-size: 1rem;
+  padding: 1.5rem 0;
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #000;
   flex-shrink: 0;
 }
-
+.main-footer {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #777;
+  background: transparent;
+}
 .logo {
   font-size: 2.8rem;
   font-weight: bold;

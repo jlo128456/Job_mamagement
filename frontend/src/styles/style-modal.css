@@ -15,7 +15,7 @@
 }
 
 /* ========== Modal Content Box ========== */
-.modal-box,
+
 #createJobModal,
 #updateJobContainer {
   background: white;
@@ -29,6 +29,17 @@
   max-height: 90vh;
   text-align: center;
 }
+.modal-box {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  justify-content: center;
+}
+
 
 /* Center create/update job forms separately */
 #createJobModal,

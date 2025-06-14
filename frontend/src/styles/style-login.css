@@ -3,69 +3,74 @@
 /* ======================= */
 /* Login Overlay Background */
 .login-overlay {
-  position: relative;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 3rem 1rem; /* uses horizontal padding */
-  min-height: calc(100vh - 60px);
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
-  box-sizing: border-box;
+  align-items: center;
+  width: 50%;
+  height: 50%;
 }
 
 /* Login Form Styling */
 #loginForm {
-  background-color: rgba(255, 255, 255, 0.98);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: none; /* 👈 remove this if it exists */
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 0;
   width: 100%;
-  max-width: 350px;
+  max-width: 400px;
   text-align: center;
-
-  /* NEW: subtle border and spacing for a sleek look */
-  border: 1px solid #eee;
-  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+  margin: 0 auto;
 }
 
+#loginForm h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
 
-/* Inputs & Button */
+#loginForm p.login-subtitle {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 1.5rem;
+}
+
 #loginForm input {
   width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
+  padding: 0.9rem;
+  margin-bottom: 1.2rem;
   font-size: 1rem;
-  border-radius: 8px;
+  border-radius: 14px;
   border: 1px solid #ccc;
+  outline: none;
   box-sizing: border-box;
+  transition: border 0.3s ease;
+}
+
+#loginForm input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 #loginForm button {
   width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
+  padding: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: bold;
   border: none;
-  border-radius: 8px;
-  background-color: #007bff;
+  border-radius: 14px;
+  background-color: #0056d2;
   color: white;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 #loginForm button:hover {
-  background-color: #0056b3;
+  background-color: #0045a5;
+  transform: translateY(-1px);
 }
 
-/* Error Message */
-#loginForm .error {
-  color: red;
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-}
-
-/* Links */
 .login-links {
   margin-top: 1rem;
   font-size: 0.9rem;
@@ -79,6 +84,7 @@
 .login-links a:hover {
   text-decoration: underline;
 }
+
 @media (max-width: 600px) {
   .login-overlay {
     padding-top: 4rem;
