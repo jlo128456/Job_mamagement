@@ -1,5 +1,3 @@
-#Flask entry point (main app setup)
-import os
 from flask import Flask
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -10,9 +8,12 @@ from routes.user_routes import user_routes
 from routes.machine_routes import machine_routes  # Optional
 
 app = Flask(__name__)
-CORS(app)
 
-# Connect to job_management.db
+# ✅ Correct CORS setup - call only ONCE
+CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+
+# DB config
+import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_path = os.path.join(basedir, "database", "job_management.db")
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
@@ -27,7 +28,6 @@ app.register_blueprint(job_routes)
 app.register_blueprint(user_routes)
 app.register_blueprint(machine_routes)
 
-# Optional: API root health check
 @app.route("/")
 def index():
     return {"message": "API is running."}, 200

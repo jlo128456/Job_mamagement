@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-//  Forgot Password Modal
+import { AppContext } from '../../context/AppContext'; // adjust path if needed
+
+// Forgot Password Modal
 export function ForgotPasswordModal({ onSubmit }) {
   const [email, setEmail] = useState('');
   const handleSubmit = e => {
@@ -17,7 +19,8 @@ export function ForgotPasswordModal({ onSubmit }) {
     </div>
   );
 }
-//  Reset Password Modal
+
+// Reset Password Modal
 export function ResetPasswordModal({ onSubmit }) {
   const [password, setPassword] = useState('');
   const handleSubmit = e => {
@@ -34,7 +37,8 @@ export function ResetPasswordModal({ onSubmit }) {
     </div>
   );
 }
-//  Signup Modal
+
+// Signup Modal
 export function SignupModal({ onSignup }) {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -55,7 +59,9 @@ export function SignupModal({ onSignup }) {
   );
 }
 
+// Login Modal (updated)
 export function LoginModal({ onLogin }) {
+  const { API_BASE_URL } = useContext(AppContext);
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
@@ -72,9 +78,10 @@ export function LoginModal({ onLogin }) {
     setError('');
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API}/users/login`, {
+      const res = await fetch(`${API_BASE_URL}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // important for session cookies
         body: JSON.stringify(form)
       });
 
@@ -87,6 +94,7 @@ export function LoginModal({ onLogin }) {
         onLogin && onLogin(data);
       }
     } catch (err) {
+      console.error('Login request failed:', err);
       setError('Network error');
     }
   };
