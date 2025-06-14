@@ -1,11 +1,17 @@
-// React-compatible jobs API
+// Utility: fallback for API base URL
+const getBaseUrl = (base) => base || process.env.REACT_APP_API || 'http://127.0.0.1:5000';
+
+// Load jobs and users
 export async function loadData(API_BASE_URL) {
+  const base = getBaseUrl(API_BASE_URL);
   try {
     const [jobsRes, usersRes] = await Promise.all([
-      fetch(`${API_BASE_URL}/jobs`),
-      fetch(`${API_BASE_URL}/users`)
+      fetch(`${base}/jobs`),
+      fetch(`${base}/users`)
     ]);
+
     if (!jobsRes.ok || !usersRes.ok) throw new Error('Fetch failed');
+
     return {
       jobs: await jobsRes.json(),
       users: await usersRes.json(),
@@ -16,9 +22,11 @@ export async function loadData(API_BASE_URL) {
   }
 }
 
+// Update job status (e.g., Onsite → Completed)
 export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideStatus = null) {
+  const base = getBaseUrl(API_BASE_URL);
   try {
-    const jobRes = await fetch(`${API_BASE_URL}/jobs/${id}`);
+    const jobRes = await fetch(`${base}/jobs/${id}`);
     if (!jobRes.ok) throw new Error('Job not found');
     const job = await jobRes.json();
 
@@ -45,7 +53,7 @@ export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideS
       status_timestamp: time,
     };
 
-    const putRes = await fetch(`${API_BASE_URL}/jobs/${id}`, {
+    const putRes = await fetch(`${base}/jobs/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedJob),
@@ -59,19 +67,21 @@ export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideS
   }
 }
 
+// Delete a job
 export async function deleteJob(id, API_BASE_URL) {
-  const res = await fetch(`${API_BASE_URL}/jobs/${id}`, { method: 'DELETE' });
+  const base = getBaseUrl(API_BASE_URL);
+  const res = await fetch(`${base}/jobs/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('Delete failed');
   return true;
 }
 
-export async function moveJobToInProgress(jobId) {
+// PATCH job to 'In Progress'
+export async function moveJobToInProgress(jobId, API_BASE_URL) {
+  const base = getBaseUrl(API_BASE_URL);
   try {
-    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/jobs/${jobId}`, {
+    const res = await fetch(`${base}/jobs/${jobId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'In Progress' }),
     });
 
@@ -79,8 +89,7 @@ export async function moveJobToInProgress(jobId) {
       throw new Error(`Failed to move job to in progress: ${res.status}`);
     }
 
-    const updatedJob = await res.json();
-    return updatedJob;
+    return await res.json();
   } catch (error) {
     console.error('Error updating job status:', error);
     alert('Unable to update job status.');
