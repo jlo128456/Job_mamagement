@@ -10,13 +10,14 @@ html, body, #root {
 
 /* ===== App Container & Main Content ===== */
 .main-content {
-  flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 1rem 1rem; /* unified padding */
-  box-sizing: border-box;
-  overflow: hidden;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  flex-grow: 0;           /* prevents it from expanding */
+  flex-shrink: 1;
+  flex-basis: auto;
+  min-height: auto;
 }
 
 /* ===== Header & Footer ===== */
@@ -36,10 +37,12 @@ html, body, #root {
 }
 
 .main-footer {
-  padding: 1rem;
+  margin-top: 0rem;       
+  padding: 0.5rem 1rem;    
   text-align: center;
   font-size: 0.85rem;
   color: #777;
+  flex-shrink: 0;
   background: transparent;
 }
 

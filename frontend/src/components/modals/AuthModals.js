@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AppContext } from '../../context/AppContext'; // adjust path if needed
+import { AppContext } from '../../context/AppContext';
 
-// Forgot Password Modal
+// 🔐 Forgot Password Modal
 export function ForgotPasswordModal({ onSubmit }) {
   const [email, setEmail] = useState('');
   const handleSubmit = e => {
@@ -10,7 +10,7 @@ export function ForgotPasswordModal({ onSubmit }) {
     if (onSubmit) onSubmit(email);
   };
   return (
-    <div className="modal">
+    <div className="auth-modal">
       <h2>Forgot Password</h2>
       <form onSubmit={handleSubmit}>
         <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
@@ -20,7 +20,7 @@ export function ForgotPasswordModal({ onSubmit }) {
   );
 }
 
-// Reset Password Modal
+// 🔐 Reset Password Modal
 export function ResetPasswordModal({ onSubmit }) {
   const [password, setPassword] = useState('');
   const handleSubmit = e => {
@@ -28,7 +28,7 @@ export function ResetPasswordModal({ onSubmit }) {
     if (onSubmit) onSubmit(password);
   };
   return (
-    <div className="modal">
+    <div className="auth-modal">
       <h2>Reset Password</h2>
       <form onSubmit={handleSubmit}>
         <input type="password" placeholder="New Password" value={password} onChange={e => setPassword(e.target.value)} required />
@@ -38,7 +38,7 @@ export function ResetPasswordModal({ onSubmit }) {
   );
 }
 
-// Signup Modal
+// 👤 Signup Modal
 export function SignupModal({ onSignup }) {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -47,7 +47,7 @@ export function SignupModal({ onSignup }) {
     if (onSignup) onSignup(form);
   };
   return (
-    <div className="modal">
+    <div className="auth-modal">
       <h2>Sign Up</h2>
       <form onSubmit={handleSubmit}>
         <input name="name" placeholder="Name" required onChange={handleChange} />
@@ -59,7 +59,7 @@ export function SignupModal({ onSignup }) {
   );
 }
 
-// Login Modal (updated)
+// 🔐 Login Modal (screenshot-style layout)
 export function LoginModal({ onLogin }) {
   const { API_BASE_URL } = useContext(AppContext);
   const [form, setForm] = useState({ email: '', password: '' });
@@ -70,41 +70,29 @@ export function LoginModal({ onLogin }) {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.email || !form.password) {
-      setError('Please fill in both fields.');
-      return;
-    }
-
+    if (!form.email || !form.password) return setError('Please fill in both fields.');
     setError('');
-
     try {
       const res = await fetch(`${API_BASE_URL}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // important for session cookies
+        credentials: 'include',
         body: JSON.stringify(form)
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Login failed');
-      } else {
-        console.log('Logged in:', data);
-        onLogin && onLogin(data);
-      }
+      !res.ok ? setError(data.error || 'Login failed') : onLogin(data);
     } catch (err) {
-      console.error('Login request failed:', err);
+      console.error('Login failed:', err);
       setError('Network error');
     }
   };
 
   return (
-    <div className="login-overlay">
-      <div className="modal-box">
-        <form id="loginForm" onSubmit={handleSubmit}>
-          <h2>Login</h2>
-          <p className="login-subtitle">Please enter your credentials</p>
+    <div className="login-screen">
+      <div className="login-card">
+        <h1>Login</h1>
+        <p className="login-subtitle">Please enter your credentials</p>
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
             name="email"
@@ -121,14 +109,13 @@ export function LoginModal({ onLogin }) {
             onChange={handleChange}
             required
           />
-          <button type="submit" className="send-btn">Login</button>
-          {error && <p className="error">{error}</p>}
-          <div className="login-links">
-            <Link to="/reset-password">Forgot Password?</Link>
-            <span> | </span>
-            <Link to="/register">Register New User</Link>
-          </div>
+          <button type="submit" className="login-btn">Login</button>
+          {error && <p className="error-msg">{error}</p>}
         </form>
+        <div className="login-links">
+          <Link to="/reset-password">Forgot Password?</Link> |{' '}
+          <Link to="/register">Register New User</Link>
+        </div>
       </div>
     </div>
   );

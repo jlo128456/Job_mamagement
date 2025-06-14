@@ -1,83 +1,113 @@
 /* ======================= */
-/* LOGIN CARD ONLY         */
+/* Layout Base             */
 /* ======================= */
-/* Login Overlay Background */
-.login-overlay {
+.login-screen {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  width: 50%;
-  height: 50%;
-}
-
-/* Login Form Styling */
-#loginForm {
-  background: transparent;
-  border: none;
-  padding: 0;
-  box-shadow: none;
-  border-radius: 0;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
+  justify-content: flex-start; /* align to top */
+  min-height: 65vh;
+  padding-top: 1vh; /* adjusted top spacing */
+  padding-bottom: 1rem;
   box-sizing: border-box;
-  margin: 0 auto;
 }
 
-#loginForm h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
+/* ======================= */
+/* Login Card & Modal Box  */
+/* ======================= */
+.login-card {
+  background: transparent; /* Removed white background */
+  padding: 0;              /* Removed internal padding */
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
 }
 
-#loginForm p.login-subtitle {
+.auth-modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ======================= */
+/* Typography              */
+/* ======================= */
+.login-card h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.login-subtitle {
   font-size: 1rem;
-  color: #444;
+  color: #555;
   margin-bottom: 1.5rem;
 }
 
-#loginForm input {
+/* ======================= */
+/* Inputs + Focus Style    */
+/* ======================= */
+.login-card input,
+.auth-modal input,
+.auth-modal textarea,
+.auth-modal select {
   width: 100%;
-  padding: 0.9rem;
-  margin-bottom: 1.2rem;
-  font-size: 1rem;
-  border-radius: 14px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
   border: 1px solid #ccc;
-  outline: none;
+  border-radius: 8px;
+  font-size: 1rem;
   box-sizing: border-box;
-  transition: border 0.3s ease;
+  transition: 0.3s ease;
 }
 
-#loginForm input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #0057ff;
+  box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.15);
+  outline: none;
 }
 
-#loginForm button {
+/* ======================= */
+/* Buttons & Hover         */
+/* ======================= */
+.login-btn,
+.send-btn {
   width: 100%;
-  padding: 0.9rem;
-  font-size: 1.05rem;
-  font-weight: bold;
+  padding: 0.75rem;
+  background: #0057ff;
+  color: #fff;
   border: none;
-  border-radius: 14px;
-  background-color: #0056d2;
-  color: white;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: 0.3s ease;
 }
 
-#loginForm button:hover {
-  background-color: #0045a5;
+.login-btn:hover,
+.send-btn:hover {
+  background: #004ae0;
   transform: translateY(-1px);
 }
 
+/* ======================= */
+/* Links & Feedback        */
+/* ======================= */
 .login-links {
   margin-top: 1rem;
   font-size: 0.9rem;
 }
 
 .login-links a {
-  color: #007bff;
+  color: #0057ff;
   text-decoration: none;
 }
 
@@ -85,12 +115,18 @@
   text-decoration: underline;
 }
 
-@media (max-width: 600px) {
-  .login-overlay {
-    padding-top: 4rem;
-  }
+.error-msg {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
 
-  #loginForm {
+/* ======================= */
+/* Mobile Adjustments      */
+/* ======================= */
+@media (max-width: 600px) {
+  .auth-modal {
     padding: 1.5rem;
+    border-radius: 10px;
   }
 }

@@ -1,10 +1,8 @@
-// src/components/CreateJobModal.js
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 
 function CreateJobModal({ isOpen, onClose }) {
   const { API_BASE_URL, jobs, setJobs } = useContext(AppContext);
-
   const [formData, setFormData] = useState({
     work_order: '',
     customer_name: '',
@@ -13,6 +11,22 @@ function CreateJobModal({ isOpen, onClose }) {
     work_required: '',
     role: 'contractor'
   });
+
+  // Generate next work_order ID when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const prefix = 'JM';
+    const lastNumber = jobs
+      .map(j => j.work_order)
+      .filter(id => id?.startsWith(prefix))
+      .map(id => parseInt(id.replace(prefix, '')))
+      .filter(n => !isNaN(n))
+      .sort((a, b) => b - a)[0] || 10000;
+
+    const nextOrder = `${prefix}${lastNumber + 1}`;
+    setFormData(prev => ({ ...prev, work_order: nextOrder }));
+  }, [isOpen, jobs]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -27,6 +41,7 @@ function CreateJobModal({ isOpen, onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const newJob = await res.json();
       setJobs([...jobs, newJob]);
@@ -52,7 +67,7 @@ function CreateJobModal({ isOpen, onClose }) {
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="close-button">×</button>
         <form onSubmit={handleSubmit}>
-          <input name="work_order" value={formData.work_order} onChange={handleChange} placeholder="Work Order" required />
+          <input name="work_order" value={formData.work_order} readOnly />
           <input name="customer_name" value={formData.customer_name} onChange={handleChange} placeholder="Customer Name" required />
           <input name="customer_address" value={formData.customer_address} onChange={handleChange} placeholder="Customer Address" required />
           <input name="contractor" value={formData.contractor} onChange={handleChange} placeholder="Contractor" required />
