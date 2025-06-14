@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 
+const checklistItems = [
+  { id: 'noMissingScrews', label: 'No Missing Screws' },
+  { id: 'testedOperation', label: 'Tested Operation' },
+  { id: 'cleanedWorksite', label: 'Cleaned Worksite' },
+  { id: 'reportedDefects', label: 'Reported Any Defects' },
+];
+
 function UpdateJobModal({ jobId, onClose }) {
   const { API_BASE_URL, userRole } = useContext(AppContext);
   const [job, setJob] = useState(null);
@@ -10,15 +17,20 @@ function UpdateJobModal({ jobId, onClose }) {
 
   useEffect(() => {
     (async () => {
-      const jobRes = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
-      const jobData = await jobRes.json();
-      setJob(jobData);
-      setForm({ ...jobData, checklist: jobData.checklist || {} });
+      const res = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
+      const data = await res.json();
+      setJob(data);
+      setForm({ ...data, checklist: data.checklist || {} });
     })();
+    document.body.classList.add('modal-open');
+    return () => document.body.classList.remove('modal-open');
   }, [API_BASE_URL, jobId]);
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
-  const handleCheck = e => setForm({ ...form, checklist: { ...form.checklist, [e.target.id]: e.target.checked } });
+  const handleCheck = e => setForm(prev => ({
+    ...prev,
+    checklist: { ...prev.checklist, [e.target.id]: e.target.checked }
+  }));
 
   const submit = async e => {
     e.preventDefault();
@@ -27,54 +39,59 @@ function UpdateJobModal({ jobId, onClose }) {
       ...form,
       status: userRole === 'contractor' && form.status === 'Completed' ? 'Completed - Pending Approval' : form.status,
       contractor_status: userRole === 'contractor' ? 'Completed' : form.status,
-      signature
+      signature,
     };
     const res = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updated)
+      body: JSON.stringify(updated),
     });
     res.ok ? onClose() : alert('Update failed');
   };
 
-  const startDraw = e => {
+  const drawStart = e => {
     const ctx = canvasRef.current.getContext('2d');
-    ctx.beginPath(); ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    ctx.beginPath();
+    ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
     setDrawing(true);
   };
-  const draw = e => {
-    if (!drawing) return;
-    const ctx = canvasRef.current.getContext('2d');
-    ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY); ctx.stroke();
-  };
-  const stopDraw = () => setDrawing(false);
+  const drawMove = e => drawing && canvasRef.current.getContext('2d').lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY) && canvasRef.current.getContext('2d').stroke();
+  const drawEnd = () => setDrawing(false);
 
   if (!job) return null;
 
   return (
-    <div className="modal"><div className="modal-box">
-      <button onClick={onClose}>×</button>
-      <h3>Update #{job.work_order}</h3>
-      <form onSubmit={submit}>
-        <input name="customer_name" value={form.customer_name} onChange={handleChange} />
-        <input name="contact_name" value={form.contact_name} onChange={handleChange} />
-        <textarea name="work_performed" value={form.work_performed} onChange={handleChange} />
-        <select name="status" value={form.status} onChange={handleChange}>
-          <option>Pending</option>
-          <option>In Progress</option>
-          <option>Completed - Pending Approval</option>
-        </select>
-        <label>
-          <input type="checkbox" id="noMissingScrews"
-            checked={form.checklist.noMissingScrews || false}
-            onChange={handleCheck} /> No Missing Screws
-        </label>
-        <canvas ref={canvasRef} width={300} height={100}
-          onMouseDown={startDraw} onMouseMove={draw} onMouseUp={stopDraw}
-          style={{ border: '1px solid #ccc' }} />
-        <button type="submit">Save</button>
-      </form>
-    </div></div>
+    <div className="modal show">
+      <div className="modal-box">
+        <button className="close-button" onClick={onClose}>×</button>
+        <h3>Update #{job.work_order}</h3>
+        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <input name="customer_name" value={form.customer_name || ''} onChange={handleChange} placeholder="Customer Name" />
+          <input name="contact_name" value={form.contact_name || ''} onChange={handleChange} placeholder="Contact Name" />
+          <textarea name="work_performed" value={form.work_performed || ''} onChange={handleChange} placeholder="Work Performed" rows={4} />
+          <select name="status" value={form.status || 'Pending'} onChange={handleChange}>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed - Pending Approval</option>
+          </select>
+
+          {checklistItems.map(({ id, label }) => (
+            <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input type="checkbox" id={id} checked={form.checklist[id] || false} onChange={handleCheck} />
+              {label}
+            </label>
+          ))}
+
+          <canvas ref={canvasRef} width={300} height={100} onMouseDown={drawStart} onMouseMove={drawMove} onMouseUp={drawEnd}
+            style={{ border: '1px solid #ccc', margin: '0 auto' }} />
+
+          <div className="button-row">
+            <button type="submit" className="send-btn">Save</button>
+            <button type="button" className="cancel-btn" onClick={onClose}>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
