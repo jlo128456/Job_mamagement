@@ -15,7 +15,7 @@ export function AppProvider({ children }) {
 
   // ─── Base API URL ───────────────────────────────────
   // Fallback to '/api' if REACT_APP_API_BASE_URL is not defined in .env
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 
   // ─── Provide context to the rest of the app ─────────

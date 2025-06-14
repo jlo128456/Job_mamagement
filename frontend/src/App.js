@@ -15,6 +15,7 @@ function AppContent() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
+        console.log('Fetching from:', `${API_BASE_URL}/jobs`);
         const res = await fetch(`${API_BASE_URL}/jobs`);
         if (!res.ok) throw new Error('Failed to fetch jobs');
         const data = await res.json();
