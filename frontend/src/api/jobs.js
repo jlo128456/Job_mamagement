@@ -78,10 +78,12 @@ export async function deleteJob(id, API_BASE_URL) {
 // PATCH job to 'In Progress'
 export async function moveJobToInProgress(jobId, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
+
   try {
     const res = await fetch(`${base}/jobs/${jobId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', //  support for session-based login
       body: JSON.stringify({ status: 'In Progress' }),
     });
 
