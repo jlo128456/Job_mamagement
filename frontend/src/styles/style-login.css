@@ -7,24 +7,29 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 3rem; /* below header */
-  padding-bottom: 3rem;
-  min-height: calc(100vh - 60px); /* leave room for header/footer */
+  padding: 3rem 1rem; /* uses horizontal padding */
+  min-height: calc(100vh - 60px);
   width: 100%;
-  overflow: hidden;
+  max-width: 100vw;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
 /* Login Form Styling */
 #loginForm {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.98);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: none; /* 👈 remove this if it exists */
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   text-align: center;
+
+  /* NEW: subtle border and spacing for a sleek look */
+  border: 1px solid #eee;
+  transition: all 0.2s ease-in-out;
 }
+
 
 /* Inputs & Button */
 #loginForm input {
