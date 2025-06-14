@@ -28,6 +28,11 @@ html, body, #root {
   box-sizing: border-box;
   overflow: hidden;
 }
+.header-subtitle {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 0.3rem;
+}
 
 /* ===== Header ===== */
 .main-header {
