@@ -3,15 +3,16 @@
 /* ======================= */
 /* Login Overlay Background */
 .login-overlay {
+  position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100vh;
-  width: 100vw;
-  padding: 1rem;
+  align-items: flex-start;
+  padding-top: 3rem; /* below header */
+  padding-bottom: 3rem;
+  min-height: calc(100vh - 60px); /* leave room for header/footer */
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Login Form Styling */
@@ -72,4 +73,13 @@
 
 .login-links a:hover {
   text-decoration: underline;
+}
+@media (max-width: 600px) {
+  .login-overlay {
+    padding-top: 4rem;
+  }
+
+  #loginForm {
+    padding: 1.5rem;
+  }
 }

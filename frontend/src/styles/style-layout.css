@@ -4,6 +4,7 @@ html, body, #root {
   padding: 0;
   height: 100%;
   font-family: Arial, sans-serif;
+  overflow-x: hidden; /* ✅ Prevent horizontal scroll */
 }
 
 /* ===== App Container ===== */
@@ -18,18 +19,11 @@ html, body, #root {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding-top: 2rem; /* push below header */
-  padding-bottom: 3rem; /* avoid footer overlap */
-}
-.modal {
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  max-width: 400px;
+  align-items: flex-start;            /* ✅ Align content under header */
+  padding: 2rem 1rem;
+  min-height: calc(100vh - 120px);    /* ✅ Header + footer height */
+  box-sizing: border-box;
   width: 100%;
-  text-align: center;
 }
 
 /* ===== Header ===== */
@@ -95,7 +89,7 @@ th {
   gap: 20px;
 }
 
-/* ===== Responsive ===== */
+/* ===== Mobile Responsive ==== */
 @media (max-width: 600px) {
   .main-content {
     padding: 1rem;

@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 
 //  Corrected CSS paths assuming styles are in src/styles/
-import './styles/style-base.css';
 import './styles/style-layout.css';
 import './styles/style-form-fields.css';
 import './styles/style-modal.css';

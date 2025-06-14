@@ -54,6 +54,7 @@ export function SignupModal({ onSignup }) {
     </div>
   );
 }
+
 export function LoginModal({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -83,7 +84,7 @@ export function LoginModal({ onLogin }) {
         setError(data.error || 'Login failed');
       } else {
         console.log('Logged in:', data);
-        onLogin && onLogin(data); // Pass user back to parent
+        onLogin && onLogin(data);
       }
     } catch (err) {
       setError('Network error');
@@ -92,33 +93,35 @@ export function LoginModal({ onLogin }) {
 
   return (
     <div className="login-overlay">
-      <form id="loginForm" onSubmit={handleSubmit}>
-        <h2>Login</h2>
-        <p className="login-subtitle">Please enter your credentials</p>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Login</button>
-        {error && <p className="error">{error}</p>}
-        <div className="login-links">
-          <Link to="/reset-password">Forgot Password?</Link>
-          <span> | </span>
-          <Link to="/register">Register New User</Link>
-        </div>
-      </form>
+      <div className="modal-box">
+        <form id="loginForm" onSubmit={handleSubmit}>
+          <h2>Login</h2>
+          <p className="login-subtitle">Please enter your credentials</p>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit" className="send-btn">Login</button>
+          {error && <p className="error">{error}</p>}
+          <div className="login-links">
+            <Link to="/reset-password">Forgot Password?</Link>
+            <span> | </span>
+            <Link to="/register">Register New User</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

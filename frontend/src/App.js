@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AppProvider, AppContext } from './context/AppContext';
-import LayoutHeaderFooter from './components/layoutHeaderFooter';
+import Header from './components/Header';
+import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import SharedDashboard from './components/SharedDashboard';
 import { LoginModal } from './components/modals/AuthModals';
@@ -68,7 +69,7 @@ function AppContent() {
         flexDirection: 'column',
       }}
     >
-      <LayoutHeaderFooter />
+      <Header />
 
       <main className="main-content" style={{ flex: 1, padding: '1rem' }}>
         <Routes>
@@ -87,6 +88,7 @@ function AppContent() {
           <Route path="*" element={<Navigate to={user ? `/${role}` : '/login'} />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }
