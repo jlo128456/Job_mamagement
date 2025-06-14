@@ -1,4 +1,4 @@
- #Job-related endpoints
+# Job-related endpoints
 from flask import Blueprint, request, jsonify
 from models.models import db, Job
 from datetime import datetime
@@ -43,7 +43,7 @@ def create_job():
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-# Update a job
+# Update a job (full replacement)
 @job_routes.route("/<int:job_id>", methods=["PUT"])
 def update_job(job_id):
     job = Job.query.get(job_id)
@@ -55,6 +55,31 @@ def update_job(job_id):
         for field in data:
             if hasattr(job, field):
                 setattr(job, field, data[field])
+        db.session.commit()
+        return jsonify(job.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+#  PATCH route: Update only specific fields (e.g., move to In Progress)
+@job_routes.route("/<int:job_id>", methods=["PATCH"])
+def patch_job(job_id):
+    job = Job.query.get(job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+
+    data = request.get_json()
+    new_status = data.get("status")
+    new_contractor_status = data.get("contractor_status")
+    timestamp = datetime.utcnow()
+
+    try:
+        if new_status:
+            job.status = new_status
+        if new_contractor_status:
+            job.contractor_status = new_contractor_status
+        job.status_timestamp = timestamp
+
         db.session.commit()
         return jsonify(job.to_dict()), 200
     except Exception as e:
