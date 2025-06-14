@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../context/AppContext';
+import { AppContext } from '../../context/AppContext';
 
 function CreateJobModal({ isOpen, onClose }) {
   const { API_BASE_URL, jobs, setJobs } = useContext(AppContext);

@@ -3,25 +3,39 @@ import { AppContext } from "../context/AppContext";
 import { formatForDisplayLocal } from "../utils/timeUtils";
 import { updateJobStatus } from "../api/jobs";
 import AdminReviewModal from "./AdminReviewModal";
+import CreateJobModal from "./modals/CreateJobModal"; // Correct path
 
 const AdminDashboard = ({ onLogout }) => {
   const { jobs, setJobs } = useContext(AppContext);
   const [modalJob, setModalJob] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleStatusUpdate = async (jobId, newStatus) => {
     try {
       const updated = await updateJobStatus(jobId, newStatus);
       setJobs(prev => prev.map(job => (job.id === updated.id ? updated : job)));
-      setModalJob(null); // close modal after update
+      setModalJob(null);
     } catch (error) {
       console.error("Failed to update job status:", error);
     }
   };
 
+  const openCreateModal = () => {
+    console.log("✅ Create Job clicked");
+    setShowCreateModal(true);
+  };
+
   return (
     <section className="dashboard-container">
-      <h2>Admin Dashboard</h2>
-      <button className="logout-btn" onClick={onLogout}>Logout</button>
+      <div className="dashboard-header">
+        <h2>Admin Dashboard</h2>
+        <div>
+          <button className="create-btn" onClick={openCreateModal}>
+            + Create Job
+          </button>
+          <button className="logout-btn" onClick={onLogout}>Logout</button>
+        </div>
+      </div>
 
       <table className="job-table">
         <thead>
@@ -55,9 +69,7 @@ const AdminDashboard = ({ onLogout }) => {
                   <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated'}</td>
                   <td>
                     {showActions && (
-                      <>
-                        <button onClick={() => setModalJob(job)}>Review</button>
-                      </>
+                      <button onClick={() => setModalJob(job)}>Review</button>
                     )}
                   </td>
                 </tr>
@@ -67,12 +79,21 @@ const AdminDashboard = ({ onLogout }) => {
         </tbody>
       </table>
 
+      {/* Admin Review Modal */}
       {modalJob && (
         <AdminReviewModal
           job={modalJob}
           onApprove={() => handleStatusUpdate(modalJob.id, "Approved")}
           onReject={() => handleStatusUpdate(modalJob.id, "Rejected")}
           onClose={() => setModalJob(null)}
+        />
+      )}
+
+      {/* Create Job Modal */}
+      {showCreateModal && (
+        <CreateJobModal
+          isOpen={true}
+          onClose={() => setShowCreateModal(false)}
         />
       )}
     </section>
