@@ -3,11 +3,16 @@ import React from 'react';
 import { formatForDisplayLocal } from '../utils/timeUtils';
 import { moveJobToInProgress } from '../api/jobs';
 
-function JobRow({ job, onComplete }) {
+function JobRow({ job, onComplete, refreshJobs }) {
   const requiredDate = job.required_date ? formatForDisplayLocal(job.required_date) : "N/A";
   const loggedTime = job.onsite_time ? formatForDisplayLocal(job.onsite_time) : "Not Logged";
   const status = job.contractor_status || job.status;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address)}`;
+
+  const handleOnsite = async () => {
+    await moveJobToInProgress(job.id);
+    if (refreshJobs) await refreshJobs(); // ✅ refresh after update
+  };
 
   return (
     <tr>
@@ -34,7 +39,7 @@ function JobRow({ job, onComplete }) {
       <td>{loggedTime}</td>
       <td>
         {job.status === 'Pending' && (
-          <button onClick={() => moveJobToInProgress(job.id)}>Onsite</button>
+          <button onClick={handleOnsite}>Onsite</button>
         )}
         <button onClick={() => onComplete(job.id)}>Job Completed</button>
       </td>
