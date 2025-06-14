@@ -1,5 +1,5 @@
 // Utility: fallback for API base URL
-const getBaseUrl = (base) => base || process.env.REACT_APP_API || 'http://127.0.0.1:5000';
+const getBaseUrl = (base) => base || process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:5000';
 
 // Load jobs and users
 export async function loadData(API_BASE_URL) {
