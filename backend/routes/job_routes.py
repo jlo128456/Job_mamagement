@@ -69,30 +69,20 @@ def patch_job(job_id):
         return jsonify({"error": "Job not found"}), 404
 
     data = request.get_json()
-    new_status = data.get("status")
-    new_contractor_status = data.get("contractor_status")
-    timestamp = datetime.utcnow()
+    now = datetime.utcnow()
 
     try:
-        if new_status:
-            job.status = new_status
-        if new_contractor_status:
-            job.contractor_status = new_contractor_status
-        job.status_timestamp = timestamp
+        if "status" in data:
+            job.status = data["status"]
+        if "contractor_status" in data:
+            job.contractor_status = data["contractor_status"]
+        if "status_timestamp" in data:
+            job.status_timestamp = now
+        if "onsite_time" in data:
+            job.onsite_time = now  # <-- must match column in DB
 
         db.session.commit()
         return jsonify(job.to_dict()), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
-
-# Delete a job
-@job_routes.route("/<int:job_id>", methods=["DELETE"])
-def delete_job(job_id):
-    job = Job.query.get(job_id)
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
-
-    db.session.delete(job)
-    db.session.commit()
-    return jsonify({"message": f"Job {job_id} deleted"}), 200

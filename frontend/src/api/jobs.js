@@ -78,22 +78,26 @@ export async function deleteJob(id, API_BASE_URL) {
 // PATCH job to 'In Progress'
 export async function moveJobToInProgress(jobId, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
+  const timestamp = new Date().toISOString();
 
   try {
     const res = await fetch(`${base}/jobs/${jobId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', //  support for session-based login
-      body: JSON.stringify({ status: 'In Progress' }),
+      credentials: 'include',
+      body: JSON.stringify({
+        status: 'In Progress',
+        contractor_status: 'In Progress',
+        status_timestamp: timestamp,
+        onsite_time: timestamp // <-- make sure this field exists in your DB
+      }),
     });
 
-    if (!res.ok) {
-      throw new Error(`Failed to move job to in progress: ${res.status}`);
-    }
-
+    if (!res.ok) throw new Error(`Failed to move job to in progress: ${res.status}`);
     return await res.json();
   } catch (error) {
     console.error('Error updating job status:', error);
     alert('Unable to update job status.');
   }
 }
+
