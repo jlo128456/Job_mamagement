@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { AppContext } from '../context/AppContext';
+import { AppContext } from '../../context/AppContext';
 
 function UpdateJobModal({ jobId, onClose }) {
   const { API_BASE_URL, userRole } = useContext(AppContext);

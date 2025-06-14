@@ -1,6 +1,6 @@
 /* ========== Modal Overlay ========== */
-.modal,
-#modalOverlay {
+.modal-overlay,
+.modal {
   position: fixed;
   top: 0; left: 0;
   width: 100vw;
@@ -9,13 +9,17 @@
   display: none;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* ensure it’s above all content */
+  z-index: 9999;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* ========== Modal Content Box ========== */
+.modal.show {
+  display: flex;
+}
 
+/* ========== Modal Container ========== */
+.modal-box,
 #createJobModal,
 #updateJobContainer {
   background: white;
@@ -24,62 +28,66 @@
   width: 90%;
   max-width: 450px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  position: relative;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   overflow-y: auto;
   max-height: 90vh;
   text-align: center;
 }
+
 .modal-box {
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  padding: 0;
-  width: 100%;
+  padding: 1.5rem;
   max-width: 400px;
-  display: flex;
-  justify-content: center;
+  border: none;
+  box-shadow: none;
+  background: transparent;
 }
 
-
-/* Center create/update job forms separately */
-#createJobModal,
-#updateJobContainer {
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  position: fixed;
-}
-
-/* ========== Modal Typography ========== */
+/* ========== Modal Header ========== */
 .modal-box h3,
 #updateJobContainer h3 {
   font-size: 1.3rem;
-  margin-bottom: 15px;
-}
-
-.modal-box p {
-  font-size: 0.95rem;
+  margin-bottom: 1rem;
   color: #333;
 }
 
-/* ========== Inputs ========== */
+/* ========== Form Inputs ========== */
 .modal-box input[type="text"],
 .modal-box input[type="email"],
-.modal-box input[type="password"] {
+.modal-box input[type="password"],
+.modal-box textarea,
+.modal-box select {
   width: 100%;
   padding: 10px;
-  margin: 10px 0;
+  margin: 0.5rem 0;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 1rem;
   box-sizing: border-box;
 }
 
-/* ========== Buttons ========== */
+/* ========== Checklist & Canvas ========== */
+.modal-box label {
+  display: block;
+  margin: 10px 0;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.modal-box canvas {
+  display: block;
+  margin: 1rem auto;
+  border: 1px solid #ccc;
+}
+
+/* ========== Action Buttons ========== */
 .button-row {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
   justify-content: center;
+  gap: 10px;
+  margin-top: 1rem;
 }
 
 .button-row button {
@@ -109,12 +117,11 @@
 .close-button {
   position: absolute;
   top: 10px;
-  right: 12px;
+  right: 15px;
   font-size: 24px;
   font-weight: bold;
-  cursor: pointer;
   color: #333;
-  line-height: 1;
+  cursor: pointer;
 }
 
 /* ========== Forgot Link ========== */
@@ -129,12 +136,12 @@
   text-decoration: underline;
 }
 
-/* ========== Mobile Enhancements ========== */
+/* ========== Responsive ========== */
 @media screen and (max-width: 600px) {
   .modal-box,
   #createJobModal,
   #updateJobContainer {
-    padding: 1.5rem;
+    padding: 1rem;
     width: 95%;
     max-width: none;
   }
@@ -150,8 +157,8 @@
   }
 
   .close-button {
+    font-size: 20px;
     top: 8px;
     right: 12px;
-    font-size: 20px;
   }
 }

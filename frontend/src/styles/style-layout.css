@@ -5,36 +5,21 @@ html, body, #root {
   height: 100%;
   width: 100%;
   font-family: Arial, sans-serif;
-  overflow-x: hidden; /* no horizontal scroll */
+  overflow-x: hidden;
 }
 
-/* ===== App Container ===== */
+/* ===== App Container & Main Content ===== */
 .main-content {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem 1rem;
-  box-sizing: border-box;
-}
-
-/* ===== Main Content Area ===== */
-.main-content {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
+  padding: 1rem 1rem; /* unified padding */
   box-sizing: border-box;
   overflow: hidden;
 }
-.header-subtitle {
-  font-size: 1rem;
-  color: #555;
-  margin-top: 0.3rem;
-}
 
-/* ===== Header ===== */
+/* ===== Header & Footer ===== */
 .main-header {
   text-align: center;
   padding: 1.5rem 0;
@@ -43,6 +28,13 @@ html, body, #root {
   color: #000;
   flex-shrink: 0;
 }
+
+.header-subtitle {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 0.3rem;
+}
+
 .main-footer {
   padding: 1rem;
   text-align: center;
@@ -50,14 +42,14 @@ html, body, #root {
   color: #777;
   background: transparent;
 }
+
 .logo {
   font-size: 2.8rem;
   font-weight: bold;
   color: #000;
 }
 
-
-/* ===== Tables ===== */
+/* ===== Table Layout ===== */
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -98,7 +90,33 @@ th {
   gap: 20px;
 }
 
-/* ===== Mobile Responsive ==== */
+/* ===== Job Status Styles ===== */
+.status-cell {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.status-cell.pending {
+  background-color: green;
+  color: white;
+}
+
+.status-cell.in-progress {
+  background-color: yellow;
+  color: black;
+}
+
+.status-cell.completed {
+  background-color: red;
+  color: white;
+}
+
+.status-cell.completed--pending-approval {
+  background-color: orange;
+  color: white;
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 600px) {
   .main-content {
     padding: 1rem;
