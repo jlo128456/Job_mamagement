@@ -3,8 +3,9 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
+  width: 100%;
+  overflow: hidden; /* Prevent scrollbars */
   font-family: Arial, sans-serif;
-  overflow-x: hidden; /* ✅ Prevent horizontal scroll */
 }
 
 /* ===== App Container ===== */
@@ -19,17 +20,18 @@ html, body, #root {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: flex-start;            /* ✅ Align content under header */
-  padding: 2rem 1rem;
-  min-height: calc(100vh - 120px);    /* ✅ Header + footer height */
-  box-sizing: border-box;
-  width: 100%;
+  align-items: center;
+  padding: 0 1rem;
+  overflow: hidden;
 }
 
 /* ===== Header ===== */
-.main-header {
-  padding: 1.5rem 0;
+.main-header,
+.main-footer {
   text-align: center;
+  padding: 1rem;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .logo {
@@ -38,15 +40,6 @@ html, body, #root {
   color: #000;
 }
 
-/* ===== Footer ===== */
-.main-footer {
-  padding: 1rem 0;
-  text-align: center;
-  font-size: 0.9rem;
-  color: #6c757d;
-  background: transparent;
-  margin-top: auto;
-}
 
 /* ===== Tables ===== */
 .table-wrapper {
