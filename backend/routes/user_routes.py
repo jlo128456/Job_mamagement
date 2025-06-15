@@ -63,3 +63,21 @@ def login_user():
     if not user or not user.check_password(data.get("password")):
         return jsonify({"error": "Invalid credentials"}), 401
     return jsonify(user.to_dict()), 200
+#demo of email rest link
+@user_routes.route("/forgot-password", methods=["POST"], strict_slashes=False)
+def forgot_password():
+    data = request.get_json() or {}
+    email = data.get("email")
+
+    if not email:
+        return jsonify({"error": "Missing email"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        # For security, still respond 200 to not reveal user existence
+        return jsonify({"message": "If that account exists, a reset link has been sent."}), 200
+
+    # In a real app, you'd generate and email a reset token here
+    # For demo purposes:
+    print(f"[demo] Sending reset link to {email}")
+    return jsonify({"message": "If that account exists, a reset link has been sent."}), 200
