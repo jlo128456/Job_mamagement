@@ -7,7 +7,7 @@ user_routes = Blueprint(
     "user_routes",
     __name__,
     url_prefix="/users",
-    strict_slashes=False  # ↩️ Accept both /users and /users/
+    strict_slashes=False  #  Accept both /users and /users/
 )
 
 # Get all users
