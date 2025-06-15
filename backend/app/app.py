@@ -3,9 +3,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from models.models import db
 
-from routes.job_routes import job_routes
-from routes.user_routes import user_routes
-from routes.machine_routes import machine_routes  # Optional
+
 
 app = Flask(__name__)
 
@@ -23,6 +21,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
+from routes.job_routes import job_routes
+from routes.user_routes import user_routes
+from routes.machine_routes import machine_routes
 # Register route blueprints
 app.register_blueprint(job_routes)
 app.register_blueprint(user_routes)
