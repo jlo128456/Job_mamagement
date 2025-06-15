@@ -5,7 +5,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import SharedDashboard from './components/SharedDashboard';
-import { LoginModal } from './components/modals/AuthModals';
+import  LoginModal from './components/modals/LoginModal';
+
 
 function AppContent() {
   const { user, setUser, API_BASE_URL, setJobs, pollingInterval, setPollingInterval } = useContext(AppContext);
