@@ -3,16 +3,27 @@ import { AppContext } from '../../context/AppContext';
 
 function CreateJobModal({ isOpen, onClose }) {
   const { API_BASE_URL, jobs, setJobs } = useContext(AppContext);
+  const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     work_order: '',
     customer_name: '',
     customer_address: '',
-    contractor: '',
+    assigned_user_id: '',
     work_required: '',
-    role: 'contractor'
   });
 
-  // Generate next work_order ID when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetch(`${API_BASE_URL}/users/staff`)
+        .then(res => res.json())
+        .then(setUsers)
+        .catch(err => {
+          console.error("Failed to load users:", err);
+          setUsers([]);
+        });
+    }
+  }, [isOpen, API_BASE_URL]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -39,7 +50,7 @@ function CreateJobModal({ isOpen, onClose }) {
       const res = await fetch(`${API_BASE_URL}/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!res.ok) throw new Error(`Error: ${res.status}`);
@@ -50,9 +61,8 @@ function CreateJobModal({ isOpen, onClose }) {
         work_order: '',
         customer_name: '',
         customer_address: '',
-        contractor: '',
+        assigned_user_id: '',
         work_required: '',
-        role: 'contractor'
       });
     } catch (err) {
       console.error("Create job failed:", err);
@@ -70,12 +80,15 @@ function CreateJobModal({ isOpen, onClose }) {
           <input name="work_order" value={formData.work_order} readOnly />
           <input name="customer_name" value={formData.customer_name} onChange={handleChange} placeholder="Customer Name" required />
           <input name="customer_address" value={formData.customer_address} onChange={handleChange} placeholder="Customer Address" required />
-          <input name="contractor" value={formData.contractor} onChange={handleChange} placeholder="Contractor" required />
-          <input name="work_required" value={formData.work_required} onChange={handleChange} placeholder="Work Required" required />
-          <select name="role" value={formData.role} onChange={handleChange}>
-            <option value="contractor">Contractor</option>
-            <option value="technician">Technician</option>
+          <select name="assigned_user_id" value={formData.assigned_user_id} onChange={handleChange} required>
+            <option value="">Assign to contractor/technician...</option>
+            {users.map(u => (
+              <option key={u.id} value={u.id}>
+                {u.role.charAt(0).toUpperCase() + u.role.slice(1)} – {u.email}
+              </option>
+            ))}
           </select>
+          <input name="work_required" value={formData.work_required} onChange={handleChange} placeholder="Work Required" required />
           <button type="submit">Create Job</button>
         </form>
       </div>
