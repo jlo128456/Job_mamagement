@@ -55,6 +55,11 @@ def user_detail(user_id):
     db.session.commit()
     return jsonify({"message": f"User {user_id} deleted"}), 200
 
+@user_routes.route("/staff", methods=["GET"])
+def get_staff():
+    users = User.query.filter(User.role.in_(["contractor", "technician"])).all()
+    return jsonify([u.to_dict() for u in users]), 200    
+
 # Login
 @user_routes.route("/login", methods=["POST"], strict_slashes=False)
 def login_user():
