@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app,
      supports_credentials=True,
      origins=["http://localhost:3000"],
-     methods=["GET","POST","PUT","DELETE","OPTIONS"],
+     methods=["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
      allow_headers=["Content-Type"])
 
 # DB config
