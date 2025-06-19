@@ -1,8 +1,10 @@
 from models.models import db, Job
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import json
 
 def seed_jobs_detailed(contractors, technicians):
+    tz = ZoneInfo("Australia/Sydney")
     jobs = [
         Job(
             work_order="JM10001",
@@ -26,7 +28,7 @@ def seed_jobs_detailed(contractors, technicians):
             work_performed="",
             travel_time="",
             labour_time="",
-            created_at=datetime(2025, 3, 5),
+            created_at=datetime(2025, 3, 5, 9, 0, tzinfo=tz),
             assigned_contractor=None,
             assigned_tech=None,
             customer_address="108 Brown St, Waterford",
@@ -54,7 +56,7 @@ def seed_jobs_detailed(contractors, technicians):
             work_performed="",
             travel_time="",
             labour_time="",
-            created_at=datetime(2025, 3, 5),
+            created_at=datetime(2025, 3, 5, 11, 0, tzinfo=tz),
             assigned_contractor=None,
             assigned_tech=None,
             customer_address="123 Main St, Jimboomba",
@@ -82,7 +84,7 @@ def seed_jobs_detailed(contractors, technicians):
             work_performed="",
             travel_time="",
             labour_time="",
-            created_at=datetime(2025, 3, 5),
+            created_at=datetime(2025, 3, 5, 14, 15, tzinfo=tz),
             assigned_contractor=None,
             assigned_tech=None,
             customer_address="150 John St, Jimboomba",
@@ -110,7 +112,7 @@ def seed_jobs_detailed(contractors, technicians):
             work_performed=None,
             travel_time=None,
             labour_time=None,
-            created_at=datetime(2025, 3, 7, 11, 37, 46),
+            created_at=datetime(2025, 3, 7, 11, 37, 46, tzinfo=tz),
             assigned_contractor=None,
             assigned_tech=None,
             customer_address="54 Anzac Avenue, Hillcrest QLD 4118",
