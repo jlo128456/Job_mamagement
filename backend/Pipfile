@@ -9,6 +9,7 @@ flask-sqlalchemy = "*"
 flask-migrate = "*"
 python-dotenv = "*"
 flask-cors = "*"
+"backports.zoneinfo" = "*"
 
 [dev-packages]
 

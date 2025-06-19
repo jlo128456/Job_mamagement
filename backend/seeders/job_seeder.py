@@ -1,6 +1,6 @@
 from models.models import db, Job
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from backports.zoneinfo import ZoneInfo  # Use backport for Python 3.8
 import json
 
 def seed_jobs_detailed(contractors, technicians):
@@ -120,7 +120,7 @@ def seed_jobs_detailed(contractors, technicians):
         ),
     ]
 
-    # Match job.contractor name with user records and assign ID dynamically
+    # Assign user IDs
     for job in jobs:
         if job.role == "contractor":
             for contractor in contractors:
