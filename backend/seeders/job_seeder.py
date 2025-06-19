@@ -4,7 +4,11 @@ from backports.zoneinfo import ZoneInfo  # Use backport for Python 3.8
 import json
 
 def seed_jobs_detailed(contractors, technicians):
-    tz = ZoneInfo("Australia/Sydney")
+    tz = ZoneInfo("Australia/Brisbane")
+
+    def dt(date_str):
+        return datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=tz)
+
     jobs = [
         Job(
             work_order="JM10001",
@@ -14,7 +18,7 @@ def seed_jobs_detailed(contractors, technicians):
             status="Pending",
             machines=json.dumps(['MX100']),
             completion_date=None,
-            required_date="2025-03-05",
+            required_date=dt("2025-03-05"),
             checklist_no_missing_screws=False,
             checklist_software_updated=False,
             checklist_tested=False,
@@ -42,7 +46,7 @@ def seed_jobs_detailed(contractors, technicians):
             status="Pending",
             machines=json.dumps(['MX200', 'MX201']),
             completion_date=None,
-            required_date="2025-03-23",
+            required_date=dt("2025-03-23"),
             checklist_no_missing_screws=False,
             checklist_software_updated=False,
             checklist_tested=False,
@@ -70,7 +74,7 @@ def seed_jobs_detailed(contractors, technicians):
             status="Pending",
             machines=json.dumps(['MX202']),
             completion_date=None,
-            required_date="2025-03-31",
+            required_date=dt("2025-03-31"),
             checklist_no_missing_screws=False,
             checklist_software_updated=False,
             checklist_tested=False,
@@ -98,7 +102,7 @@ def seed_jobs_detailed(contractors, technicians):
             status="Pending",
             machines=json.dumps(['MX300']),
             completion_date=None,
-            required_date="2025-03-25",
+            required_date=dt("2025-03-25"),
             checklist_no_missing_screws=None,
             checklist_software_updated=None,
             checklist_tested=None,
