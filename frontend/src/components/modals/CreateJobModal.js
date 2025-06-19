@@ -9,6 +9,7 @@ function CreateJobModal({ isOpen, onClose }) {
     customer_name: '',
     customer_address: '',
     assigned_user_id: '',
+    required_date: '', 
     work_required: '',
   });
 
@@ -73,27 +74,26 @@ function CreateJobModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="close-button">×</button>
-        <form onSubmit={handleSubmit}>
-          <input name="work_order" value={formData.work_order} readOnly />
-          <input name="customer_name" value={formData.customer_name} onChange={handleChange} placeholder="Customer Name" required />
-          <input name="customer_address" value={formData.customer_address} onChange={handleChange} placeholder="Customer Address" required />
-          <select name="assigned_user_id" value={formData.assigned_user_id} onChange={handleChange} required>
-            <option value="">Assign to contractor/technician...</option>
-            {users.map(u => (
-              <option key={u.id} value={u.id}>
-                {u.role.charAt(0).toUpperCase() + u.role.slice(1)} – {u.email}
-              </option>
-            ))}
-          </select>
-          <input name="work_required" value={formData.work_required} onChange={handleChange} placeholder="Work Required" required />
-          <button type="submit">Create Job</button>
-        </form>
-      </div>
+  <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <button className="close-button" onClick={onClose}>×</button>
+      <form onSubmit={handleSubmit}>
+        <input name="work_order" value={formData.work_order} readOnly />
+        <input name="customer_name" placeholder="Customer Name" value={formData.customer_name} onChange={handleChange} required />
+        <input name="customer_address" placeholder="Customer Address" value={formData.customer_address} onChange={handleChange} required />
+        <select name="assigned_user_id" value={formData.assigned_user_id} onChange={handleChange} required>
+          <option value="">Assign to user...</option>
+          {users.map(u => (
+            <option key={u.id} value={u.id}>{u.role} – {u.email}</option>
+          ))}
+        </select>
+        <input name="work_required" placeholder="Work Required" value={formData.work_required} onChange={handleChange} required />
+        <input type="date" name="required_date" value={formData.required_date} onChange={handleChange} required />
+        <button type="submit">Create Job</button>
+      </form>
     </div>
-  );
+  </div>
+);
 }
 
 export default CreateJobModal;
