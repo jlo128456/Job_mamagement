@@ -24,14 +24,19 @@ def get_job(job_id):
 def create_job():
     data = request.get_json()
     try:
+        required_date = data.get("required_date")
+        if required_date:
+            required_date = datetime.strptime(required_date, "%Y-%m-%d")
+
         new_job = Job(
             work_order=data.get("work_order"),
             customer_name=data.get("customer_name"),
             contractor=data.get("contractor"),
+            assigned_user_id=data.get("assigned_user_id"), 
             role=data.get("role"),
             status=data.get("status", "Pending"),
             machines=data.get("machines"),
-            required_date=data.get("required_date"),
+            required_date=required_date,
             work_required=data.get("work_required"),
             customer_address=data.get("customer_address"),
             created_at=datetime.utcnow()
@@ -53,7 +58,9 @@ def update_job(job_id):
     data = request.get_json()
     try:
         for field in data:
-            if hasattr(job, field):
+            if field == "required_date" and data[field]:
+                setattr(job, field, datetime.strptime(data[field], "%Y-%m-%d"))
+            elif hasattr(job, field):
                 setattr(job, field, data[field])
         db.session.commit()
         return jsonify(job.to_dict()), 200
@@ -61,7 +68,7 @@ def update_job(job_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-#  PATCH route: Update only specific fields (e.g., move to In Progress)
+# Patch specific fields (status updates, timestamps, etc.)
 @job_routes.route("/<int:job_id>", methods=["PATCH"])
 def patch_job(job_id):
     job = Job.query.get(job_id)
@@ -79,8 +86,7 @@ def patch_job(job_id):
         if "status_timestamp" in data:
             job.status_timestamp = now
         if "onsite_time" in data:
-            job.onsite_time = now  # <-- must match column in DB
-
+            job.onsite_time = now
         db.session.commit()
         return jsonify(job.to_dict()), 200
     except Exception as e:
