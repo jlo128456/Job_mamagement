@@ -9,36 +9,39 @@ import  LoginModal from './components/modals/LoginModal';
 
 
 function AppContent() {
-  const { user, setUser, API_BASE_URL, setJobs, pollingInterval, setPollingInterval } = useContext(AppContext);
+  const { user, setUser, API_BASE_URL, setJobs } = useContext(AppContext);
   const [role, setRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        console.log('Fetching from:', `${API_BASE_URL}/jobs`);
-        const res = await fetch(`${API_BASE_URL}/jobs`);
-        if (!res.ok) throw new Error('Failed to fetch jobs');
-        const data = await res.json();
-        setJobs(data);
-      } catch (err) {
-        console.error('Polling error:', err);
-      }
-    };
+  let intervalId;
 
-    fetchJobs();
-    if (!pollingInterval) {
-      const interval = setInterval(fetchJobs, 10000); // 10 seconds
-      setPollingInterval(interval);
+  const fetchJobs = async () => {
+    if (!navigator.onLine) {
+      console.warn("⚠️ Offline — skipping job fetch");
+      return;
     }
 
-    return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-        setPollingInterval(null);
-      }
-    };
-  }, [API_BASE_URL, pollingInterval, setJobs, setPollingInterval]);
+    try {
+      console.log("🔁 Fetching from:", `${API_BASE_URL}/jobs`);
+      const res = await fetch(`${API_BASE_URL}/jobs`);
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
+      setJobs(data);
+    } catch (err) {
+      console.error("❌ Polling error:", err.message);
+    }
+  };
+
+  // Fetch once immediately
+  fetchJobs();
+
+  // Start polling
+  intervalId = setInterval(fetchJobs, 10000); // 10s
+
+  // Cleanup on unmount
+  return () => clearInterval(intervalId);
+}, [API_BASE_URL, setJobs]);
 
   const handleLogin = (user) => {
     if (user?.email && user?.role) {

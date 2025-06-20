@@ -12,17 +12,27 @@ function CreateJobModal({ isOpen, onClose }) {
     required_date: '',
     work_required: ''
   });
-  // Load staff on modal open
+
+  // Load staff when modal opens
   useEffect(() => {
     if (!isOpen) return;
+
     fetch(`${API_BASE_URL}/users/staff`)
-      .then(res => res.json())
-      .then(setUsers)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch users');
+        return res.json();
+      })
+      .then(data => {
+        console.log("Fetched users:", data);
+        setUsers(data);
+      })
       .catch(err => console.error("Failed to load users:", err));
   }, [isOpen, API_BASE_URL]);
+
   // Generate next work_order
   useEffect(() => {
     if (!isOpen) return;
+
     const prefix = 'JM';
     const lastNumber =
       jobs
@@ -46,14 +56,21 @@ function CreateJobModal({ isOpen, onClose }) {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        timezone,
+        assigned_user_id: parseInt(formData.assigned_user_id, 10) || null,
+      };
+
       const res = await fetch(`${API_BASE_URL}/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, timezone })
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const newJob = await res.json();
+
       setJobs(prev => [...prev, newJob]);
       onClose(); // close modal
       setFormData({
@@ -78,16 +95,50 @@ function CreateJobModal({ isOpen, onClose }) {
         <button className="close-button" onClick={onClose}>×</button>
         <form onSubmit={handleSubmit}>
           <input name="work_order" value={formData.work_order} readOnly />
-          <input name="customer_name" placeholder="Customer Name" value={formData.customer_name} onChange={handleChange} required />
-          <input name="customer_address" placeholder="Customer Address" value={formData.customer_address} onChange={handleChange} required />
-          <select name="assigned_user_id" value={formData.assigned_user_id} onChange={handleChange} required>
+          <input
+            name="customer_name"
+            placeholder="Customer Name"
+            value={formData.customer_name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            name="customer_address"
+            placeholder="Customer Address"
+            value={formData.customer_address}
+            onChange={handleChange}
+            required
+          />
+
+          <select
+            name="assigned_user_id"
+            value={formData.assigned_user_id}
+            onChange={handleChange}
+            required
+          >
             <option value="">Assign to user...</option>
+            {users.length === 0 && <option disabled>Loading users or none available</option>}
             {users.map(u => (
-              <option key={u.id} value={u.id}>{u.role} – {u.email}</option>
+              <option key={u.id} value={u.id}>
+                {u.role.charAt(0).toUpperCase() + u.role.slice(1)} – {u.email}
+              </option>
             ))}
           </select>
-          <input name="work_required" placeholder="Work Required" value={formData.work_required} onChange={handleChange} required />
-          <input type="date" name="required_date" value={formData.required_date} onChange={handleChange} required />
+
+          <input
+            name="work_required"
+            placeholder="Work Required"
+            value={formData.work_required}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="date"
+            name="required_date"
+            value={formData.required_date}
+            onChange={handleChange}
+            required
+          />
           <button type="submit">Create Job</button>
         </form>
       </div>
@@ -96,3 +147,4 @@ function CreateJobModal({ isOpen, onClose }) {
 }
 
 export default CreateJobModal;
+
