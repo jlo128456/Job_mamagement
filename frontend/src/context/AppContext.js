@@ -64,7 +64,7 @@ export function AppProvider({ children }) {
     };
 
     fetchJobs();
-    pollingIntervalRef.current = setInterval(fetchJobs, 60000);
+    pollingIntervalRef.current = setInterval(fetchJobs, 30000);
 
     return () => {
       clearInterval(pollingIntervalRef.current);
