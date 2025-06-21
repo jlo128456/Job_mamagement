@@ -1,47 +1,16 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AppProvider, AppContext } from './context/AppContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import SharedDashboard from './components/SharedDashboard';
-import  LoginModal from './components/modals/LoginModal';
-
+import LoginModal from './components/modals/LoginModal';
 
 function AppContent() {
-  const { user, setUser, API_BASE_URL, setJobs } = useContext(AppContext);
+  const { user, setUser } = useContext(AppContext);
   const [role, setRole] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-  let intervalId;
-
-  const fetchJobs = async () => {
-    if (!navigator.onLine) {
-      console.warn("⚠️ Offline — skipping job fetch");
-      return;
-    }
-
-    try {
-      console.log("🔁 Fetching from:", `${API_BASE_URL}/jobs`);
-      const res = await fetch(`${API_BASE_URL}/jobs`);
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-      const data = await res.json();
-      setJobs(data);
-    } catch (err) {
-      console.error("❌ Polling error:", err.message);
-    }
-  };
-
-  // Fetch once immediately
-  fetchJobs();
-
-  // Start polling
-  intervalId = setInterval(fetchJobs, 10000); // 10s
-
-  // Cleanup on unmount
-  return () => clearInterval(intervalId);
-}, [API_BASE_URL, setJobs]);
 
   const handleLogin = (user) => {
     if (user?.email && user?.role) {
@@ -75,7 +44,6 @@ function AppContent() {
       }}
     >
       <Header />
-
       <main className="main-content" style={{ flex: 1, padding: '1rem' }}>
         <Routes>
           <Route path="/login" element={<LoginModal onLogin={handleLogin} />} />
