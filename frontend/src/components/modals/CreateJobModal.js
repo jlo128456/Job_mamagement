@@ -5,30 +5,32 @@ import CreateJobForm from './CreateJobForm';
 function CreateJobModal({ isOpen, onClose }) {
   const { API_BASE_URL, jobs, setJobs, timezone, user } = useContext(AppContext);
   const [users, setUsers] = useState([]);
+  const [machines, setMachines] = useState([]);
   const [formData, setFormData] = useState({
     work_order: '', customer_name: '', customer_address: '', assigned_user_id: '',
-    required_date: '', work_required: '', contractor: user?.email || '',
+    required_date: '', work_required: '', contractor: '',
     role: '', machines: ''
   });
 
   useEffect(() => {
     if (!isOpen) return;
+
     fetch(`${API_BASE_URL}/users/staff`)
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(setUsers)
+      .catch(console.error);
+
+    fetch(`${API_BASE_URL}/machines`)
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(setMachines)
       .catch(console.error);
   }, [isOpen, API_BASE_URL]);
 
   useEffect(() => {
     if (!isOpen) return;
     const prefix = 'JM';
-    const last = jobs
-      .map(j => j.work_order)
-      .filter(id => id?.startsWith(prefix))
-      .map(id => parseInt(id.replace(prefix, '')))
-      .filter(n => !isNaN(n))
-      .sort((a, b) => b - a)[0] || 10000;
-
+    const last = jobs.map(j => j.work_order).filter(id => id?.startsWith(prefix))
+      .map(id => parseInt(id.replace(prefix, ''))).filter(n => !isNaN(n)).sort((a, b) => b - a)[0] || 10000;
     setFormData(f => ({ ...f, work_order: `${prefix}${last + 1}` }));
   }, [isOpen, jobs]);
 
@@ -36,15 +38,10 @@ function CreateJobModal({ isOpen, onClose }) {
 
   const handleSubmit = async e => {
     e.preventDefault();
-
-    const parsedUserId = Number.isInteger(Number(formData.assigned_user_id))
-      ? Number(formData.assigned_user_id)
-      : null;
-
     const payload = {
       ...formData,
-      assigned_user_id: parsedUserId,
-      machines: formData.machines?.trim() || '',
+      assigned_user_id: parseInt(formData.assigned_user_id) || null,
+      machines: formData.machines || '',
       timezone
     };
 
@@ -63,7 +60,6 @@ function CreateJobModal({ isOpen, onClose }) {
         required_date: '', work_required: '', contractor: user?.email || '', role: '', machines: ''
       });
     } catch (err) {
-      console.error("Job creation failed:", err);
       alert("Failed to create job.");
     }
   };
@@ -77,6 +73,7 @@ function CreateJobModal({ isOpen, onClose }) {
         <CreateJobForm
           formData={formData}
           users={users}
+          machines={machines}
           onChange={handleChange}
           onSubmit={handleSubmit}
         />
