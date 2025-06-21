@@ -9,6 +9,7 @@ import './styles/style-modal.css';
 import './styles/style-logout.css';
 import './styles/style-login.css';
 import './styles/style-utility.css';
+import './styles/style-modal-responsive.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
