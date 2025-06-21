@@ -3,27 +3,18 @@ import { AppContext } from '../../context/AppContext';
 import CreateJobForm from './CreateJobForm';
 
 function CreateJobModal({ isOpen, onClose }) {
-  const { API_BASE_URL, jobs, setJobs, timezone, user } = useContext(AppContext);
+  const { API_BASE_URL, jobs, setJobs, timezone } = useContext(AppContext);
   const [users, setUsers] = useState([]);
   const [machines, setMachines] = useState([]);
   const [formData, setFormData] = useState({
-    work_order: '', customer_name: '', customer_address: '', assigned_user_id: '',
-    required_date: '', work_required: '', contractor: '',
-    role: '', machines: ''
+    work_order: '', customer_name: '', customer_address: '',
+    assigned_user_id: '', required_date: '', work_required: '', machines: ''
   });
 
   useEffect(() => {
     if (!isOpen) return;
-
-    fetch(`${API_BASE_URL}/users/staff`)
-      .then(res => res.ok ? res.json() : Promise.reject())
-      .then(setUsers)
-      .catch(console.error);
-
-    fetch(`${API_BASE_URL}/machines`)
-      .then(res => res.ok ? res.json() : Promise.reject())
-      .then(setMachines)
-      .catch(console.error);
+    fetch(`${API_BASE_URL}/users/staff`).then(res => res.ok ? res.json() : Promise.reject()).then(setUsers).catch(console.error);
+    fetch(`${API_BASE_URL}/machines`).then(res => res.ok ? res.json() : Promise.reject()).then(setMachines).catch(console.error);
   }, [isOpen, API_BASE_URL]);
 
   useEffect(() => {
@@ -56,10 +47,10 @@ function CreateJobModal({ isOpen, onClose }) {
       setJobs(p => [...p, newJob]);
       onClose();
       setFormData({
-        work_order: '', customer_name: '', customer_address: '', assigned_user_id: '',
-        required_date: '', work_required: '', contractor: user?.email || '', role: '', machines: ''
+        work_order: '', customer_name: '', customer_address: '',
+        assigned_user_id: '', required_date: '', work_required: '', machines: ''
       });
-    } catch (err) {
+    } catch {
       alert("Failed to create job.");
     }
   };
