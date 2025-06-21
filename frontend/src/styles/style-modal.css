@@ -4,13 +4,12 @@
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 9999;
+  align-items: flex-start;
+  padding: 2rem 1rem;
   overflow-y: auto;
-  padding: 1rem;
+  z-index: 9999;
 }
 
-/* Clean modal layout */
 .modal-box,
 #createJobModal,
 #updateJobContainer {
@@ -19,15 +18,14 @@
   padding: 2rem;
   width: 100%;
   max-width: 500px;
-  max-height: 90vh;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  max-height: calc(100vh - 2rem);
   overflow-y: auto;
   position: relative;
-  text-align: left;
   box-sizing: border-box;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  text-align: left;
 }
 
-/* Modal heading */
 .modal-box h3 {
   font-size: 1.4rem;
   margin-bottom: 1rem;
@@ -35,7 +33,6 @@
   color: #222;
 }
 
-/* Inputs: consistent height and spacing */
 .modal-box input,
 .modal-box textarea,
 .modal-box select {
@@ -45,8 +42,8 @@
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  box-sizing: border-box;
   background: #fafafa;
+  box-sizing: border-box;
   transition: border 0.3s ease;
 }
 
@@ -59,7 +56,6 @@
   background: #fff;
 }
 
-/* Action buttons */
 .button-row {
   display: flex;
   justify-content: space-between;
@@ -92,7 +88,6 @@
   opacity: 0.9;
 }
 
-/* Close button */
 .close-button {
   position: absolute;
   top: 10px;
@@ -102,25 +97,4 @@
   background: none;
   border: none;
   cursor: pointer;
-}
-
-/* Mobile friendly */
-@media (max-width: 600px) {
-  .modal-box {
-    padding: 1.2rem;
-  }
-
-  .button-row {
-    flex-direction: column;
-  }
-
-  .button-row button {
-    margin: 0.5rem 0;
-  }
-
-  .close-button {
-    top: 8px;
-    right: 12px;
-    font-size: 20px;
-  }
 }
