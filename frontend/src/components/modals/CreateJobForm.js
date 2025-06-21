@@ -1,6 +1,6 @@
 import React from 'react';
 
-function CreateJobForm({ formData, users, machines, onChange, onSubmit }) {
+function CreateJobForm({ formData, users, onChange, onSubmit }) {
   return (
     <form onSubmit={onSubmit}>
       {['work_order', 'customer_name', 'customer_address'].map(name => (
@@ -19,27 +19,14 @@ function CreateJobForm({ formData, users, machines, onChange, onSubmit }) {
         <option value="">Assign to user...</option>
         {users.length > 0 ? users.map(u => (
           <option key={u.id} value={u.id}>
-            {u.role.charAt(0).toUpperCase() + u.role.slice(1)} – {u.name}
+            {u.contractor || `${u.role.charAt(0).toUpperCase() + u.role.slice(1)}`}
           </option>
         )) : <option disabled>Loading users...</option>}
       </select>
 
       <input name="work_required" placeholder="Work Required" value={formData.work_required} onChange={onChange} required />
       <input type="date" name="required_date" value={formData.required_date} onChange={onChange} required />
-      <input name="contractor" placeholder="Contractor Name" value={formData.contractor} onChange={onChange} required />
-
-      <select name="role" value={formData.role} onChange={onChange} required>
-        <option value="">Select Role</option>
-        <option value="contractor">Contractor</option>
-        <option value="technician">Technician</option>
-      </select>
-
-      <select name="machines" value={formData.machines} onChange={onChange}>
-        <option value="">Select Machine (optional)</option>
-        {machines.length > 0 ? machines.map(m => (
-          <option key={m.id} value={m.name}>{m.name}</option>
-        )) : <option disabled>Loading machines...</option>}
-      </select>
+      <input name="machines" placeholder="Machines Involved (optional)" value={formData.machines} onChange={onChange} />
 
       <button type="submit">Create Job</button>
     </form>

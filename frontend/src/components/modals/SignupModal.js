@@ -42,7 +42,6 @@ function SignupModal({ isOpen, onSignup, onClose }) {
         <h3>Create New Account</h3>
         <form onSubmit={handleSubmit}>
           {[
-            { name: 'name', type: 'text', placeholder: 'Full Name' },
             { name: 'email', type: 'email', placeholder: 'Email Address' },
             { name: 'password', type: 'password', placeholder: 'Password' }
           ].map(({ name, type, placeholder }) => (
