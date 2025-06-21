@@ -18,6 +18,30 @@ export function AppProvider({ children }) {
     console.log('User timezone detected:', tz);
   }, []);
 
+  // 🔁 Poll every 10 sec to check for job updates
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await fetch(`${state.API_BASE_URL}/jobs`);
+        if (!res.ok) throw new Error('Failed to fetch jobs');
+        const data = await res.json();
+        setState((prev) => ({ ...prev, jobs: data }));
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    };
+
+    fetchJobs(); // Initial load
+
+    const interval = setInterval(fetchJobs, 10000);
+    setState((prev) => ({ ...prev, pollingInterval: interval }));
+
+    return () => {
+      clearInterval(interval);
+      setState((prev) => ({ ...prev, pollingInterval: null }));
+    };
+  }, [state.API_BASE_URL]);
+
   const setters = {
     setUser: (user) => setState((s) => ({ ...s, user })),
     setJobs: (jobs) => setState((s) => ({ ...s, jobs })),
