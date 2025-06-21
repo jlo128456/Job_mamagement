@@ -19,7 +19,7 @@ function CreateJobForm({ formData, users, onChange, onSubmit }) {
         <option value="">Assign to user...</option>
         {users.length > 0 ? users.map(u => (
           <option key={u.id} value={u.id}>
-            {u.role.charAt(0).toUpperCase() + u.role.slice(1)} – {u.email}
+            {u.role.charAt(0).toUpperCase() + u.role.slice(1)} – {u.name || u.email}
           </option>
         )) : <option disabled>Loading users...</option>}
       </select>

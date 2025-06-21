@@ -22,8 +22,13 @@ function CreateJobModal({ isOpen, onClose }) {
   useEffect(() => {
     if (!isOpen) return;
     const prefix = 'JM';
-    const last = jobs.map(j => j.work_order).filter(id => id?.startsWith(prefix))
-      .map(id => parseInt(id.replace(prefix, ''))).filter(n => !isNaN(n)).sort((a, b) => b - a)[0] || 10000;
+    const last = jobs
+      .map(j => j.work_order)
+      .filter(id => id?.startsWith(prefix))
+      .map(id => parseInt(id.replace(prefix, '')))
+      .filter(n => !isNaN(n))
+      .sort((a, b) => b - a)[0] || 10000;
+
     setFormData(f => ({ ...f, work_order: `${prefix}${last + 1}` }));
   }, [isOpen, jobs]);
 
@@ -31,10 +36,15 @@ function CreateJobModal({ isOpen, onClose }) {
 
   const handleSubmit = async e => {
     e.preventDefault();
+
+    const parsedUserId = Number.isInteger(Number(formData.assigned_user_id))
+      ? Number(formData.assigned_user_id)
+      : null;
+
     const payload = {
       ...formData,
-      assigned_user_id: parseInt(formData.assigned_user_id) || null,
-      machines: formData.machines || '',
+      assigned_user_id: parsedUserId,
+      machines: formData.machines?.trim() || '',
       timezone
     };
 
@@ -53,6 +63,7 @@ function CreateJobModal({ isOpen, onClose }) {
         required_date: '', work_required: '', contractor: user?.email || '', role: '', machines: ''
       });
     } catch (err) {
+      console.error("Job creation failed:", err);
       alert("Failed to create job.");
     }
   };
