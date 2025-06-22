@@ -16,7 +16,10 @@ function CreateJobModal({ isOpen, onClose }) {
     Promise.all([
       fetch(`${API_BASE_URL}/users/staff`).then(res => res.ok && res.json()),
       fetch(`${API_BASE_URL}/machines`).then(res => res.ok && res.json())
-    ]).then(([u, m]) => { if (u) setUsers(u); if (m) setMachines(m); });
+    ]).then(([u, m]) => {
+      if (u) setUsers(u);
+      if (m) setMachines(m);
+    });
   }, [isOpen, API_BASE_URL]);
 
   useEffect(() => {
@@ -26,7 +29,8 @@ function CreateJobModal({ isOpen, onClose }) {
       .map(j => j.work_order)
       .filter(id => id?.startsWith(prefix))
       .map(id => parseInt(id.replace(prefix, '')))
-      .filter(n => !isNaN(n)).sort((a, b) => b - a)[0] || 10000;
+      .filter(n => !isNaN(n))
+      .sort((a, b) => b - a)[0] || 10000;
     setFormData(f => ({ ...f, work_order: `${prefix}${last + 1}` }));
   }, [isOpen, jobs]);
 
@@ -44,7 +48,7 @@ function CreateJobModal({ isOpen, onClose }) {
       assigned_user_id: u?.id || null,
       contractor: u?.contractor || '',
       role: u?.role || '',
-      machines: formData.machines ? parseInt(formData.machines) : null,
+      machines: formData.machines || '',
       timezone
     };
     console.log('📦 Job Payload:', payload);

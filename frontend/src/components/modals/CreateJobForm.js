@@ -6,11 +6,6 @@ function CreateJobForm({ formData, users, machines, onChange, onSubmit }) {
     onChange({ target: { name, value: value.trim() } });
   };
 
-  const handleMachineChange = e => {
-    const { value } = e.target;
-    onChange({ target: { name: 'machines', value: value ? parseInt(value) : '' } });
-  };
-
   return (
     <form onSubmit={onSubmit}>
       <label htmlFor="work_order">Work Order</label>
@@ -71,11 +66,11 @@ function CreateJobForm({ formData, users, machines, onChange, onSubmit }) {
         required
       />
 
-      <select name="machines" value={formData.machines} onChange={handleMachineChange}>
+      <select name="machines" value={formData.machines} onChange={onChange}>
         <option value="">Select a machine (optional)</option>
         {machines.map(m => (
-          <option key={m.id} value={m.id}>
-            {m.name || m.serial_number || `Machine ${m.id}`}
+          <option key={m.id} value={m.name}>
+            {m.name} ({m.type || 'Unknown type'})
           </option>
         ))}
       </select>
