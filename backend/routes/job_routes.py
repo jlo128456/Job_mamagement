@@ -67,14 +67,19 @@ def patch_job(job_id):
     data = request.get_json()
     now = datetime.utcnow()
     try:
-        if "status" in data:
-            job.status = data["status"]
-        if "contractor_status" in data:
-            job.contractor_status = data["contractor_status"]
-        if "status_timestamp" in data:
+        updatable_fields = [
+            "customer_name", "contact_name", "travel_time", "labour_hours",
+            "work_performed", "status", "contractor_status", "checklist", "signature"
+        ]
+        for field in updatable_fields:
+            if field in data:
+                setattr(job, field, data[field])
+
+        if "status" in data or "contractor_status" in data:
             job.status_timestamp = now
         if "onsite_time" in data:
             job.onsite_time = now
+
         db.session.commit()
         return jsonify(job.to_dict()), 200
     except Exception as e:
