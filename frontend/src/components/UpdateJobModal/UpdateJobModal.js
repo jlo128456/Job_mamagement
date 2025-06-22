@@ -38,7 +38,7 @@ function UpdateJobModal({ jobId, onClose }) {
           : form.status,
     };
     const res = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -67,26 +67,26 @@ function UpdateJobModal({ jobId, onClose }) {
   if (!job) return null;
 
   return (
-    <div id="modalOverlay" className="modal show" onClick={handleOverlayClick}>
-      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <button className="close-button" onClick={onClose}>×</button>
-        <h3>Update #{job.work_order}</h3>
-        <UpdateJobForm
-          form={form}
-          setForm={setForm}
-          canvasRef={canvasRef}
-          onSubmit={handleSubmit}
-          onClose={onClose}
-          updateForm={updateForm}
-          updateCheck={updateCheck}
-          drawing={drawing}
-          setDrawing={setDrawing}
-          start={start}
-          move={move}
-        />
-      </div>
+  <div className="modal-overlay" onClick={handleOverlayClick}>
+    <div className="modal-box" onClick={e => e.stopPropagation()}>
+      <button className="close-button" onClick={onClose}>×</button>
+      <h3>Update #{job.work_order}</h3>
+      <UpdateJobForm
+        form={form}
+        setForm={setForm}
+        canvasRef={canvasRef}
+        onSubmit={handleSubmit}
+        onClose={onClose}
+        updateForm={updateForm}
+        updateCheck={updateCheck}
+        drawing={drawing}
+        setDrawing={setDrawing}
+        start={start}
+        move={move}
+      />
     </div>
-  );
+  </div>
+);
 }
 
 export default UpdateJobModal;

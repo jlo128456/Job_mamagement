@@ -23,7 +23,7 @@ function UpdateJobForm({
   canvasRef,
   start,
   move,
-  setDrawing
+  setDrawing,
 }) {
   return (
     <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -46,7 +46,11 @@ function UpdateJobForm({
         rows={4}
       />
 
-      <select name="status" value={form.status || 'Pending'} onChange={e => updateForm('status', e.target.value)}>
+      <select
+        name="status"
+        value={form.status || 'Pending'}
+        onChange={e => updateForm('status', e.target.value)}
+      >
         <option>Pending</option>
         <option>In Progress</option>
         <option>Completed - Pending Approval</option>
@@ -56,7 +60,6 @@ function UpdateJobForm({
         <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <input
             type="checkbox"
-            id={id}
             checked={form.checklist[id] || false}
             onChange={e => updateCheck(id, e.target.checked)}
           />
@@ -71,7 +74,8 @@ function UpdateJobForm({
         onMouseDown={start}
         onMouseMove={move}
         onMouseUp={() => setDrawing(false)}
-        style={{ border: '1px solid #ccc', margin: '0 auto' }}
+        onMouseLeave={() => setDrawing(false)}
+        style={{ border: '1px solid #ccc', margin: '0 auto', touchAction: 'none' }}
       />
 
       <div className="button-row">

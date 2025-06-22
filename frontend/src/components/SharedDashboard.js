@@ -1,9 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import JobRow from './JobRow';
+import UpdateJobModal from './UpdateJobModal/UpdateJobModal';
 
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
+  const [activeJobId, setActiveJobId] = useState(null);
 
   const filteredJobs = Array.isArray(jobs)
     ? jobs.filter(job =>
@@ -17,6 +19,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
     <div className="dashboard-container">
       <h2>{role === 'contractor' ? 'Contractor' : 'Technician'} Dashboard</h2>
       <button className="logout-btn" onClick={onLogout}>Logout</button>
+
       <div className="table-wrapper">
         <table className="dashboard-table">
           <thead>
@@ -31,15 +34,33 @@ function SharedDashboard({ role, onLogout, onComplete }) {
           </thead>
           <tbody>
             {filteredJobs.length === 0 ? (
-              <tr><td colSpan="6">No jobs found for this {role}.</td></tr>
+              <tr>
+                <td colSpan="6">No jobs found for this {role}.</td>
+              </tr>
             ) : (
               filteredJobs.map(job => (
-                <JobRow key={job.id} job={job} refreshJobs={fetchJobs} onComplete={onComplete} />
+                <JobRow
+                  key={job.id}
+                  job={job}
+                  refreshJobs={fetchJobs}
+                  onComplete={onComplete}
+                  onOpenModal={() => setActiveJobId(job.id)}
+                />
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {activeJobId && (
+        <UpdateJobModal
+          jobId={activeJobId}
+          onClose={() => {
+            setActiveJobId(null);
+            fetchJobs?.();
+          }}
+        />
+      )}
     </div>
   );
 }
