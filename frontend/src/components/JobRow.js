@@ -1,4 +1,3 @@
-// src/components/JobRow.js
 import React, { useState } from 'react';
 import { formatForDisplayLocal } from '../utils/timeUtils';
 import { moveJobToInProgress } from '../api/jobs';
@@ -7,23 +6,27 @@ import UpdateJobModal from './modals/UpdateJobModal';
 function JobRow({ job, refreshJobs }) {
   const [showModal, setShowModal] = useState(false);
 
-  const requiredDate = job.required_date
+  const requiredDate = job?.required_date
     ? formatForDisplayLocal(job.required_date)
     : "N/A";
-  const loggedTime = job.onsite_time
+  const loggedTime = job?.onsite_time
     ? formatForDisplayLocal(job.onsite_time)
     : "Not Logged";
-  const status = job.contractor_status || job.status;
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address)}`;
+  const status = job?.contractor_status || job?.status || "Unknown";
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address || '')}`;
 
   const handleOnsite = async () => {
-    await moveJobToInProgress(job.id);
-    if (refreshJobs) await refreshJobs();
+    try {
+      await moveJobToInProgress(job.id);
+      refreshJobs?.();
+    } catch (e) {
+      console.error("Failed to move job to In Progress", e);
+    }
   };
 
   const handleCloseModal = async () => {
     setShowModal(false);
-    if (refreshJobs) await refreshJobs();
+    refreshJobs?.();
   };
 
   return (
@@ -40,7 +43,7 @@ function JobRow({ job, refreshJobs }) {
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               alert(`Customer Address: ${job.customer_address}`);
               window.open(mapsUrl, '_blank');

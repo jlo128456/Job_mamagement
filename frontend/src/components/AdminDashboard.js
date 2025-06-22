@@ -3,36 +3,38 @@ import { AppContext } from "../context/AppContext";
 import { formatForDisplayLocal } from "../utils/timeUtils";
 import { updateJobStatus } from "../api/jobs";
 import AdminReviewModal from "./AdminReviewModal";
-import CreateJobModal from "./modals/CreateJobModal"; // Correct path
+import CreateJobModal from "./modals/CreateJobModal";
 
 const AdminDashboard = ({ onLogout }) => {
-  const { jobs, setJobs } = useContext(AppContext);
+  const { jobs, setJobs, fetchJobs } = useContext(AppContext);
   const [modalJob, setModalJob] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleStatusUpdate = async (jobId, newStatus) => {
     try {
       const updated = await updateJobStatus(jobId, newStatus);
-      setJobs(prev => prev.map(job => (job.id === updated.id ? updated : job)));
+      setJobs(prev => Array.isArray(prev)
+        ? prev.map(j => (j.id === updated.id ? updated : j)) : []);
+      await fetchJobs(); // live refresh
       setModalJob(null);
-    } catch (error) {
-      console.error("Failed to update job status:", error);
+    } catch (err) {
+      console.error("Status update failed:", err);
     }
   };
 
-  const openCreateModal = () => {
-    console.log("✅ Create Job clicked");
-    setShowCreateModal(true);
+  const handleJobCreated = async () => {
+    setShowCreateModal(false);
+    await fetchJobs(); // refresh immediately after job creation
   };
+
+  const jobList = Array.isArray(jobs) ? jobs : [];
 
   return (
     <section className="dashboard-container">
       <div className="dashboard-header">
         <h2>Admin Dashboard</h2>
         <div>
-          <button className="create-btn" onClick={openCreateModal}>
-            + Create Job
-          </button>
+          <button className="create-btn" onClick={() => setShowCreateModal(true)}>Create Job</button>
           <button className="logout-btn" onClick={onLogout}>Logout</button>
         </div>
       </div>
@@ -40,46 +42,31 @@ const AdminDashboard = ({ onLogout }) => {
       <table className="job-table">
         <thead>
           <tr>
-            <th>Work Order</th>
-            <th>Customer</th>
-            <th>Contractor</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Updated</th>
-            <th>Actions</th>
+            <th>Work Order</th><th>Customer</th><th>Contractor</th>
+            <th>Role</th><th>Status</th><th>Updated</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {jobs.length === 0 ? (
+          {jobList.length === 0 ? (
             <tr><td colSpan="7">No jobs found</td></tr>
-          ) : (
-            jobs.map(job => {
-              const showActions = job.status === "Completed - Pending Approval";
-              const statusClass = job.status?.toLowerCase().replace(/\s/g, "-") || "na";
-
-              return (
-                <tr key={job.id}>
-                  <td>{job.work_order || 'N/A'}</td>
-                  <td>{job.customer_name || 'N/A'}</td>
-                  <td>{job.contractor || 'N/A'}</td>
-                  <td>{job.role || 'N/A'}</td>
-                  <td className={`status-cell ${statusClass}`}>
-                    {job.status || 'N/A'}
-                  </td>
-                  <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated'}</td>
-                  <td>
-                    {showActions && (
-                      <button onClick={() => setModalJob(job)}>Review</button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })
-          )}
+          ) : jobList.map(job => {
+            const showActions = job.status === "Completed - Pending Approval";
+            const statusClass = job.status?.toLowerCase().replace(/\s/g, "-") || "na";
+            return (
+              <tr key={job.id}>
+                <td>{job.work_order || 'N/A'}</td>
+                <td>{job.customer_name || 'N/A'}</td>
+                <td>{job.contractor || 'N/A'}</td>
+                <td>{job.role || 'N/A'}</td>
+                <td className={`status-cell ${statusClass}`}>{job.status || 'N/A'}</td>
+                <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated'}</td>
+                <td>{showActions && <button onClick={() => setModalJob(job)}>Review</button>}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
-      {/* Admin Review Modal */}
       {modalJob && (
         <AdminReviewModal
           job={modalJob}
@@ -89,12 +76,8 @@ const AdminDashboard = ({ onLogout }) => {
         />
       )}
 
-      {/* Create Job Modal */}
       {showCreateModal && (
-        <CreateJobModal
-          isOpen={true}
-          onClose={() => setShowCreateModal(false)}
-        />
+        <CreateJobModal isOpen onClose={() => setShowCreateModal(false)} onJobCreated={handleJobCreated} />
       )}
     </section>
   );
