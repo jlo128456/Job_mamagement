@@ -16,9 +16,7 @@ function CreateJobModal({ isOpen, onClose }) {
     Promise.all([
       fetch(`${API_BASE_URL}/users/staff`).then(res => res.ok && res.json()),
       fetch(`${API_BASE_URL}/machines`).then(res => res.ok && res.json())
-    ])
-      .then(([u, m]) => { if (u) setUsers(u); if (m) setMachines(m); })
-      .catch(console.error);
+    ]).then(([u, m]) => { if (u) setUsers(u); if (m) setMachines(m); });
   }, [isOpen, API_BASE_URL]);
 
   useEffect(() => {
@@ -28,7 +26,8 @@ function CreateJobModal({ isOpen, onClose }) {
       .map(j => j.work_order)
       .filter(id => id?.startsWith(prefix))
       .map(id => parseInt(id.replace(prefix, '')))
-      .filter(n => !isNaN(n)).sort((a, b) => b - a)[0] || 10000;
+      .filter(n => !isNaN(n))
+      .sort((a, b) => b - a)[0] || 10000;
     setFormData(f => ({ ...f, work_order: `${prefix}${last + 1}` }));
   }, [isOpen, jobs]);
 
@@ -42,10 +41,9 @@ function CreateJobModal({ isOpen, onClose }) {
       assigned_user_id: u?.id || null,
       contractor: u?.contractor || '',
       role: u?.role || '',
-      machines: formData.machines || '',
       timezone
     };
-
+    console.log('📦 Job Payload:', payload);
     try {
       const res = await fetch(`${API_BASE_URL}/jobs`, {
         method: 'POST',
@@ -56,7 +54,10 @@ function CreateJobModal({ isOpen, onClose }) {
       const newJob = await res.json();
       setJobs(p => [...p, newJob]);
       onClose();
-      setFormData({ work_order: '', customer_name: '', customer_address: '', assigned_user_id: '', required_date: '', work_required: '', machines: '' });
+      setFormData({
+        work_order: '', customer_name: '', customer_address: '', assigned_user_id: '',
+        required_date: '', work_required: '', machines: ''
+      });
     } catch {
       alert("Failed to create job.");
     }
