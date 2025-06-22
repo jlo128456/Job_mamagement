@@ -23,7 +23,7 @@ export async function loadData(API_BASE_URL) {
 }
 
 // Update job status (for contractor or admin)
-export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideStatus = null) {
+export async function updateJobStatus(id, overrideStatus = null, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
   try {
     const jobRes = await fetch(`${base}/jobs/${id}`);
@@ -31,23 +31,25 @@ export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideS
     const job = await jobRes.json();
 
     const time = new Date().toISOString();
-    let status = overrideStatus || job.status;
+    let status = job.status;
     let contractorStatus = job.contractor_status;
 
     if (overrideStatus) {
-      // Admin overrides
+      // Admin override
       if (overrideStatus === 'Approved') {
         status = 'Approved';
       } else if (overrideStatus === 'Rejected') {
         status = 'Pending';
         contractorStatus = 'Pending';
+      } else {
+        throw new Error('Invalid override status.');
       }
     } else {
-      // Contractor or tech flow
-      if (job.status === 'Pending') {
+      // Normal technician/contractor flow
+      if (status === 'Pending') {
         status = 'In Progress';
         contractorStatus = 'In Progress';
-      } else if (job.status === 'In Progress') {
+      } else if (status === 'In Progress') {
         status = 'Completed - Pending Approval';
         contractorStatus = 'Completed';
       } else {
@@ -63,7 +65,7 @@ export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideS
     };
 
     const putRes = await fetch(`${base}/jobs/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedJob),
     });
@@ -75,6 +77,7 @@ export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideS
     throw err;
   }
 }
+
 
 // Delete a job
 export async function deleteJob(id, API_BASE_URL) {

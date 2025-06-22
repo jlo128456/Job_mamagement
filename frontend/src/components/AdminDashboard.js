@@ -44,15 +44,20 @@ const AdminDashboard = ({ onLogout }) => {
       <table className="job-table">
         <thead>
           <tr>
-            <th>Work Order</th><th>Customer</th><th>Contractor</th>
-            <th>Role</th><th>Status</th><th>Updated</th><th>Actions</th>
+            <th>Work Order</th>
+            <th>Customer</th>
+            <th>Contractor</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Updated</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {jobList.length === 0 ? (
             <tr><td colSpan="7">No jobs found</td></tr>
           ) : jobList.map(job => {
-            const showActions = job.status === "Completed - Pending Approval";
+            const showActions = ["Completed - Pending Approval", "Completed"].includes(job.status);
             const statusClass = getStatusClass(job.status);
             return (
               <tr key={job.id}>

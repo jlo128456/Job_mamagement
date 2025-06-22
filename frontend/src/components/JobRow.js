@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { AppContext } from '../context/AppContext';
 import { formatForDisplayLocal } from '../utils/timeUtils';
 import { moveJobToInProgress } from '../api/jobs';
 import { getStatusClass } from '../utils/statusUtils';
 
 function JobRow({ job, refreshJobs, onOpenModal }) {
+  const { user } = useContext(AppContext);
+
   const requiredDate = job?.required_date
     ? formatForDisplayLocal(job.required_date)
     : 'N/A';
@@ -12,10 +15,18 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
     ? formatForDisplayLocal(job.onsite_time)
     : 'Not Logged';
 
-  const status = job?.contractor_status || job?.status || 'Unknown';
-  const statusClass = `status-cell ${getStatusClass(status)}`;
+  const rawStatus = job?.contractor_status || job?.status || 'Unknown';
 
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address || '')}`;
+  const displayStatus =
+    rawStatus === 'Approved' && (job.role === 'contractor' || job.role === 'technician')
+      ? 'Completed'
+      : rawStatus;
+
+  const statusClass = `status-cell ${getStatusClass(displayStatus)}`;
+
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    job.customer_address || ''
+  )}`;
 
   const handleOnsite = async () => {
     try {
@@ -50,7 +61,7 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
         </a>
       </td>
       <td>{requiredDate}</td>
-      <td className={statusClass}>{status}</td>
+      <td className={statusClass}>{displayStatus}</td>
       <td>{loggedTime}</td>
       <td>
         {job.status === 'Pending' && (
@@ -63,3 +74,4 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
 }
 
 export default JobRow;
+
