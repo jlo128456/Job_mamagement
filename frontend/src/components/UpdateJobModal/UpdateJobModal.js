@@ -60,11 +60,15 @@ function UpdateJobModal({ jobId, onClose }) {
     }
   };
 
+  const handleOverlayClick = (e) => {
+    if (e.target.id === 'modalOverlay') onClose();
+  };
+
   if (!job) return null;
 
   return (
-    <div className="modal show">
-      <div className="modal-box">
+    <div id="modalOverlay" className="modal show" onClick={handleOverlayClick}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         <button className="close-button" onClick={onClose}>×</button>
         <h3>Update #{job.work_order}</h3>
         <UpdateJobForm
