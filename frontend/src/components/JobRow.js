@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatForDisplayLocal } from '../utils/timeUtils';
 import { moveJobToInProgress } from '../api/jobs';
-import UpdateJobModal from './modals/UpdateJobModal';
+import UpdateJobModal from './UpdateJobModal/UpdateJobModal';
 
 function JobRow({ job, refreshJobs }) {
   const [showModal, setShowModal] = useState(false);

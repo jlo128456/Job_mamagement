@@ -4,7 +4,7 @@
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   padding: 2rem 1rem;
   overflow-y: auto;
   z-index: 9999;
@@ -24,6 +24,7 @@
   box-sizing: border-box;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   text-align: left;
+  margin: auto; /* Optional safeguard for fallback centering */
 }
 
 .modal-box h3 {
