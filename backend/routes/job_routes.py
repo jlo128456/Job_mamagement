@@ -5,63 +5,51 @@ from datetime import datetime
 
 job_routes = Blueprint("job_routes", __name__, url_prefix="/jobs")
 
-# Get all jobs
 @job_routes.route("/", methods=["GET"], strict_slashes=False)
 def get_jobs():
-    jobs = Job.query.all()
-    return jsonify([job.to_dict() for job in jobs]), 200
+    return jsonify([job.to_dict() for job in Job.query.all()]), 200
 
-# Get job by ID
 @job_routes.route("/<int:job_id>", methods=["GET"], strict_slashes=False)
 def get_job(job_id):
     job = Job.query.get(job_id)
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
-    return jsonify(job.to_dict()), 200
+    return (jsonify(job.to_dict()), 200) if job else (jsonify({"error": "Job not found"}), 404)
 
-# Create a new job
 @job_routes.route("/", methods=["POST"], strict_slashes=False)
 def create_job():
     data = request.get_json()
-    print("📥 Incoming job data:", data)  #  log incoming payload
-
+    print("📥 Incoming job data:", data)
     try:
-        required_date = data.get("required_date")
-        if required_date:
-            required_date = datetime.strptime(required_date, "%Y-%m-%d")
-
+        date = data.get("required_date")
         new_job = Job(
             work_order=data.get("work_order"),
             customer_name=data.get("customer_name"),
             contractor=data.get("contractor"),
-            assigned_user_id=data.get("assigned_user_id"),
             role=data.get("role"),
             status=data.get("status", "Pending"),
             machines=data.get("machines"),
-            required_date=required_date,
+            required_date=datetime.strptime(date, "%Y-%m-%d") if date else None,
             work_required=data.get("work_required"),
             customer_address=data.get("customer_address"),
             created_at=datetime.utcnow()
         )
+        if data.get("role") == "contractor":
+            new_job.assigned_contractor = data.get("assigned_user_id")
+        elif data.get("role") == "technician":
+            new_job.assigned_tech = data.get("assigned_user_id")
 
         db.session.add(new_job)
         db.session.commit()
         return jsonify(new_job.to_dict()), 201
-
     except Exception as e:
         db.session.rollback()
-        import traceback
-        traceback.print_exc()  #  detailed error traceback in terminal
+        import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
-
-# Update a job (full replacement)
 @job_routes.route("/<int:job_id>", methods=["PUT"], strict_slashes=False)
 def update_job(job_id):
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
-
     data = request.get_json()
     try:
         for field in data:
@@ -75,16 +63,13 @@ def update_job(job_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-# Patch specific fields (status updates, timestamps, etc.)
 @job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
 def patch_job(job_id):
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
-
     data = request.get_json()
     now = datetime.utcnow()
-
     try:
         if "status" in data:
             job.status = data["status"]

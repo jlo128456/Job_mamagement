@@ -40,18 +40,24 @@ function CreateJobModal({ isOpen, onClose }) {
   const handleSubmit = async e => {
     e.preventDefault();
     const u = users.find(u => u.id === parseInt(formData.assigned_user_id));
+
     const payload = {
-      ...formData,
+      work_order: formData.work_order,
       customer_name: formData.customer_name.trim(),
       customer_address: formData.customer_address.trim(),
       work_required: formData.work_required.trim(),
-      assigned_user_id: u?.id || null,
       contractor: u?.contractor || '',
       role: u?.role || '',
+      status: 'Pending',
       machines: formData.machines || '',
-      timezone
+      required_date: formData.required_date,
+      timezone,
+      assigned_contractor: u?.role === 'contractor' ? u.id : null,
+      assigned_tech: u?.role === 'technician' ? u.id : null
     };
+
     console.log('📦 Job Payload:', payload);
+
     try {
       const res = await fetch(`${API_BASE_URL}/jobs`, {
         method: 'POST',
