@@ -10,3 +10,4 @@ export function applyStatusColor(statusElement, status) {
   statusElement.style.backgroundColor = style.background;
   statusElement.style.color = style.color;
 }
+

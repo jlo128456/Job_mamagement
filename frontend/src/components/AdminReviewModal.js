@@ -1,4 +1,3 @@
-// src/components/AdminReviewModal.js
 import React from "react";
 
 function AdminReviewModal({ job, onClose, onApprove, onReject }) {
@@ -15,9 +14,15 @@ function AdminReviewModal({ job, onClose, onApprove, onReject }) {
           <p><strong>Role:</strong> {job.role}</p>
           <p><strong>Contractor:</strong> {job.contractor}</p>
           <p><strong>Work Required:</strong> {job.work_required}</p>
+
+          {job.work_performed && (
+            <p><strong>Work Performed:</strong> {job.work_performed}</p>
+          )}
+
           {job.contractor_notes && (
             <p><strong>Contractor Notes:</strong> {job.contractor_notes}</p>
           )}
+
           {job.onsite_time && (
             <p><strong>Onsite Time:</strong> {new Date(job.onsite_time).toLocaleString()}</p>
           )}
@@ -34,3 +39,4 @@ function AdminReviewModal({ job, onClose, onApprove, onReject }) {
 }
 
 export default AdminReviewModal;
+

@@ -114,7 +114,7 @@ th {
   color: white;
 }
 
-.status-cell.completed--pending-approval {
+.status-cell.completed-pending-approval {
   background-color: orange;
   color: white;
 }

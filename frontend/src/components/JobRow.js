@@ -1,6 +1,7 @@
 import React from 'react';
 import { formatForDisplayLocal } from '../utils/timeUtils';
 import { moveJobToInProgress } from '../api/jobs';
+import { getStatusClass } from '../utils/statusUtils';
 
 function JobRow({ job, refreshJobs, onOpenModal }) {
   const requiredDate = job?.required_date
@@ -12,6 +13,7 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
     : 'Not Logged';
 
   const status = job?.contractor_status || job?.status || 'Unknown';
+  const statusClass = `status-cell ${getStatusClass(status)}`;
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address || '')}`;
 
@@ -48,9 +50,7 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
         </a>
       </td>
       <td>{requiredDate}</td>
-      <td className={`status-cell ${status.toLowerCase().replace(/\s/g, '-')}`}>
-        {status}
-      </td>
+      <td className={statusClass}>{status}</td>
       <td>{loggedTime}</td>
       <td>
         {job.status === 'Pending' && (

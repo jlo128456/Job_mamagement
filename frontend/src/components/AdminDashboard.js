@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { formatForDisplayLocal } from "../utils/timeUtils";
 import { updateJobStatus } from "../api/jobs";
+import { getStatusClass } from "../utils/statusUtils";
 import AdminReviewModal from "./AdminReviewModal";
 import CreateJobModal from "./modals/CreateJobModal";
 
@@ -52,7 +53,7 @@ const AdminDashboard = ({ onLogout }) => {
             <tr><td colSpan="7">No jobs found</td></tr>
           ) : jobList.map(job => {
             const showActions = job.status === "Completed - Pending Approval";
-            const statusClass = job.status?.toLowerCase().replace(/\s/g, "-") || "na";
+            const statusClass = getStatusClass(job.status);
             return (
               <tr key={job.id}>
                 <td>{job.work_order || 'N/A'}</td>
@@ -78,7 +79,11 @@ const AdminDashboard = ({ onLogout }) => {
       )}
 
       {showCreateModal && (
-        <CreateJobModal isOpen onClose={() => setShowCreateModal(false)} onJobCreated={handleJobCreated} />
+        <CreateJobModal
+          isOpen
+          onClose={() => setShowCreateModal(false)}
+          onJobCreated={handleJobCreated}
+        />
       )}
     </section>
   );
