@@ -17,51 +17,47 @@ def get_job(job_id):
 @job_routes.route("/", methods=["POST"], strict_slashes=False)
 def create_job():
     data = request.get_json()
-    print("📥 Incoming job data:", data)
     try:
-        date = data.get("required_date")
+        role = data.get("role")
+        name = data.get("contractor")  # this field is used for both contractor or technician names
+
+        if not name or not role:
+            return jsonify({"error": "Both role and contractor name are required"}), 400
+
+        from models.models import User
+        user = User.query.filter_by(contractor=name).first()
+        if not user:
+            return jsonify({"error": f"No user found with name '{name}'"}), 404
+
+        required_date = data.get("required_date")
         new_job = Job(
             work_order=data.get("work_order"),
             customer_name=data.get("customer_name"),
-            contractor=data.get("contractor"),
-            role=data.get("role"),
+            contractor=name,
+            role=role,
             status=data.get("status", "Pending"),
             machines=data.get("machines"),
-            required_date=datetime.strptime(date, "%Y-%m-%d") if date else None,
+            required_date=datetime.strptime(required_date, "%Y-%m-%d") if required_date else None,
             work_required=data.get("work_required"),
             customer_address=data.get("customer_address"),
             created_at=datetime.utcnow()
         )
-        if data.get("role") == "contractor":
-            new_job.assigned_contractor = data.get("assigned_user_id")
-        elif data.get("role") == "technician":
-            new_job.assigned_tech = data.get("assigned_user_id")
+
+        # Assign user ID based on role
+        if role == "contractor":
+            new_job.assigned_contractor = user.id
+        elif role == "technician":
+            new_job.assigned_tech = user.id
 
         db.session.add(new_job)
         db.session.commit()
         return jsonify(new_job.to_dict()), 201
+
     except Exception as e:
         db.session.rollback()
-        import traceback; traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
-@job_routes.route("/<int:job_id>", methods=["PUT"], strict_slashes=False)
-def update_job(job_id):
-    job = Job.query.get(job_id)
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
-    data = request.get_json()
-    try:
-        for field in data:
-            if field == "required_date" and data[field]:
-                setattr(job, field, datetime.strptime(data[field], "%Y-%m-%d"))
-            elif hasattr(job, field):
-                setattr(job, field, data[field])
-        db.session.commit()
-        return jsonify(job.to_dict()), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+
 
 @job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
 def patch_job(job_id):
