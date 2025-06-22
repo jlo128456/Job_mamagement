@@ -22,34 +22,59 @@ export async function loadData(API_BASE_URL) {
   }
 }
 
-// Update job status (e.g., Onsite → Completed)
-export async function updateJobStatus(id, newStatus, API_BASE_URL) {
+// Update job status (for contractor or admin)
+export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideStatus = null) {
   const base = getBaseUrl(API_BASE_URL);
-  const time = new Date().toISOString();
-
   try {
-    const res = await fetch(`${base}/jobs/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        status: newStatus,
-        status_timestamp: time
-      }),
-    });
+    const jobRes = await fetch(`${base}/jobs/${id}`);
+    if (!jobRes.ok) throw new Error('Job not found');
+    const job = await jobRes.json();
 
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.error || 'Failed to update status');
+    const time = new Date().toISOString();
+    let status = overrideStatus || job.status;
+    let contractorStatus = job.contractor_status;
+
+    if (overrideStatus) {
+      // Admin overrides
+      if (overrideStatus === 'Approved') {
+        status = 'Approved';
+      } else if (overrideStatus === 'Rejected') {
+        status = 'Pending';
+        contractorStatus = 'Pending';
+      }
+    } else {
+      // Contractor or tech flow
+      if (job.status === 'Pending') {
+        status = 'In Progress';
+        contractorStatus = 'In Progress';
+      } else if (job.status === 'In Progress') {
+        status = 'Completed - Pending Approval';
+        contractorStatus = 'Completed';
+      } else {
+        throw new Error('Cannot change job status further.');
+      }
     }
 
-    return await res.json();
+    const updatedJob = {
+      ...job,
+      status,
+      contractor_status: contractorStatus,
+      status_timestamp: time,
+    };
+
+    const putRes = await fetch(`${base}/jobs/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedJob),
+    });
+
+    if (!putRes.ok) throw new Error('Update failed');
+    return await putRes.json();
   } catch (err) {
     console.error('Error updating job:', err);
     throw err;
   }
 }
-
 
 // Delete a job
 export async function deleteJob(id, API_BASE_URL) {
@@ -59,7 +84,7 @@ export async function deleteJob(id, API_BASE_URL) {
   return true;
 }
 
-// PATCH job to 'In Progress'
+// Move job to In Progress (contractor shortcut)
 export async function moveJobToInProgress(jobId, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
   const timestamp = new Date().toISOString();
@@ -73,7 +98,7 @@ export async function moveJobToInProgress(jobId, API_BASE_URL) {
         status: 'In Progress',
         contractor_status: 'In Progress',
         status_timestamp: timestamp,
-        onsite_time: timestamp // <-- make sure this field exists in your DB
+        onsite_time: timestamp,
       }),
     });
 
@@ -84,4 +109,3 @@ export async function moveJobToInProgress(jobId, API_BASE_URL) {
     alert('Unable to update job status.');
   }
 }
-
