@@ -26,21 +26,25 @@ function CreateJobModal({ isOpen, onClose }) {
       .map(j => j.work_order)
       .filter(id => id?.startsWith(prefix))
       .map(id => parseInt(id.replace(prefix, '')))
-      .filter(n => !isNaN(n))
-      .sort((a, b) => b - a)[0] || 10000;
+      .filter(n => !isNaN(n)).sort((a, b) => b - a)[0] || 10000;
     setFormData(f => ({ ...f, work_order: `${prefix}${last + 1}` }));
   }, [isOpen, jobs]);
 
-  const handleChange = e => setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = e =>
+    setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = async e => {
     e.preventDefault();
     const u = users.find(u => u.id === parseInt(formData.assigned_user_id));
     const payload = {
       ...formData,
+      customer_name: formData.customer_name.trim(),
+      customer_address: formData.customer_address.trim(),
+      work_required: formData.work_required.trim(),
       assigned_user_id: u?.id || null,
       contractor: u?.contractor || '',
       role: u?.role || '',
+      machines: formData.machines ? parseInt(formData.machines) : null,
       timezone
     };
     console.log('📦 Job Payload:', payload);
@@ -55,8 +59,8 @@ function CreateJobModal({ isOpen, onClose }) {
       setJobs(p => [...p, newJob]);
       onClose();
       setFormData({
-        work_order: '', customer_name: '', customer_address: '', assigned_user_id: '',
-        required_date: '', work_required: '', machines: ''
+        work_order: '', customer_name: '', customer_address: '',
+        assigned_user_id: '', required_date: '', work_required: '', machines: ''
       });
     } catch {
       alert("Failed to create job.");

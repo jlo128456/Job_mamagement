@@ -1,39 +1,83 @@
 import React from 'react';
 
 function CreateJobForm({ formData, users, machines, onChange, onSubmit }) {
+  const handleTrim = e => {
+    const { name, value } = e.target;
+    onChange({ target: { name, value: value.trim() } });
+  };
+
+  const handleMachineChange = e => {
+    const { value } = e.target;
+    onChange({ target: { name: 'machines', value: value ? parseInt(value) : '' } });
+  };
+
   return (
     <form onSubmit={onSubmit}>
-      {['work_order', 'customer_name', 'customer_address'].map(name => (
-        <input
-          key={name}
-          name={name}
-          placeholder={name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-          value={formData[name]}
-          onChange={onChange}
-          readOnly={name === 'work_order'}
-          required={name !== 'work_order'}
-        />
-      ))}
+      <label htmlFor="work_order">Work Order</label>
+      <input
+        name="work_order"
+        value={formData.work_order}
+        readOnly
+        placeholder="Work Order Number"
+        className="readonly-input"
+      />
 
-      <select name="assigned_user_id" value={formData.assigned_user_id} onChange={onChange} required>
+      <input
+        name="customer_name"
+        placeholder="Customer Name"
+        value={formData.customer_name}
+        onChange={onChange}
+        onBlur={handleTrim}
+        required
+      />
+
+      <input
+        name="customer_address"
+        placeholder="Customer Address"
+        value={formData.customer_address}
+        onChange={onChange}
+        onBlur={handleTrim}
+        required
+      />
+
+      <select
+        name="assigned_user_id"
+        value={formData.assigned_user_id}
+        onChange={onChange}
+        required
+      >
         <option value="">Assign to user...</option>
-        {users.length > 0 ? users.map(u => (
+        {users.map(u => (
           <option key={u.id} value={u.id}>
             {u.contractor || `${u.role.charAt(0).toUpperCase() + u.role.slice(1)}`}
           </option>
-        )) : <option disabled>Loading users...</option>}
+        ))}
       </select>
 
-      <input name="work_required" placeholder="Work Required" value={formData.work_required} onChange={onChange} required />
-      <input type="date" name="required_date" value={formData.required_date} onChange={onChange} required />
+      <input
+        name="work_required"
+        placeholder="Work Required"
+        value={formData.work_required}
+        onChange={onChange}
+        onBlur={handleTrim}
+        required
+      />
 
-      <select name="machines" value={formData.machines} onChange={onChange}>
+      <input
+        type="date"
+        name="required_date"
+        value={formData.required_date}
+        onChange={onChange}
+        required
+      />
+
+      <select name="machines" value={formData.machines} onChange={handleMachineChange}>
         <option value="">Select a machine (optional)</option>
-        {machines.length > 0 ? machines.map(m => (
+        {machines.map(m => (
           <option key={m.id} value={m.id}>
             {m.name || m.serial_number || `Machine ${m.id}`}
           </option>
-        )) : <option disabled>Loading machines...</option>}
+        ))}
       </select>
 
       <button type="submit">Create Job</button>
