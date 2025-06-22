@@ -1,6 +1,6 @@
-# Job-related endpoints 
 from flask import Blueprint, request, jsonify
-from models.models import db, Job
+from flask_login import current_user
+from models.models import db, Job, User
 from datetime import datetime
 
 job_routes = Blueprint("job_routes", __name__, url_prefix="/jobs")
@@ -17,18 +17,17 @@ def get_job(job_id):
 @job_routes.route("/", methods=["POST"], strict_slashes=False)
 def create_job():
     data = request.get_json()
+    role = data.get("role")
+    name = data.get("contractor")
+
+    if not role or not name:
+        return jsonify({"error": "Both role and contractor name are required"}), 400
+
+    user = User.query.filter_by(contractor=name).first()
+    if not user:
+        return jsonify({"error": f"No user found with name '{name}'"}), 404
+
     try:
-        role = data.get("role")
-        name = data.get("contractor")  # this field is used for both contractor or technician names
-
-        if not name or not role:
-            return jsonify({"error": "Both role and contractor name are required"}), 400
-
-        from models.models import User
-        user = User.query.filter_by(contractor=name).first()
-        if not user:
-            return jsonify({"error": f"No user found with name '{name}'"}), 404
-
         required_date = data.get("required_date")
         new_job = Job(
             work_order=data.get("work_order"),
@@ -40,15 +39,10 @@ def create_job():
             required_date=datetime.strptime(required_date, "%Y-%m-%d") if required_date else None,
             work_required=data.get("work_required"),
             customer_address=data.get("customer_address"),
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            assigned_contractor=user.id if role == "contractor" else None,
+            assigned_tech=user.id if role == "technician" else None
         )
-
-        # Assign user ID based on role
-        if role == "contractor":
-            new_job.assigned_contractor = user.id
-        elif role == "technician":
-            new_job.assigned_tech = user.id
-
         db.session.add(new_job)
         db.session.commit()
         return jsonify(new_job.to_dict()), 201
@@ -57,31 +51,36 @@ def create_job():
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-
-
 @job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
 def patch_job(job_id):
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
+
     data = request.get_json()
     now = datetime.utcnow()
+
     try:
-        updatable_fields = [
+        for field in [
             "customer_name", "contact_name", "travel_time", "labour_hours",
             "work_performed", "status", "contractor_status", "checklist", "signature"
-        ]
-        for field in updatable_fields:
+        ]:
             if field in data:
                 setattr(job, field, data[field])
 
-        if "status" in data or "contractor_status" in data:
+        new_status = data.get("status")
+        if new_status and new_status != job.status:
+            if new_status == "Approved" and getattr(current_user, "role", None) != "admin":
+                return jsonify({"error": "Only admin can approve jobs"}), 403
+            job.status = new_status
             job.status_timestamp = now
+
         if "onsite_time" in data:
             job.onsite_time = now
 
         db.session.commit()
         return jsonify(job.to_dict()), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
