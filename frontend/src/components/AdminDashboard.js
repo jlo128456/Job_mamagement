@@ -13,9 +13,10 @@ const AdminDashboard = ({ onLogout }) => {
   const handleStatusUpdate = async (jobId, newStatus) => {
     try {
       const updated = await updateJobStatus(jobId, newStatus);
-      setJobs(prev => Array.isArray(prev)
-        ? prev.map(j => (j.id === updated.id ? updated : j)) : []);
-      await fetchJobs(); // live refresh
+      setJobs(prev =>
+        Array.isArray(prev) ? prev.map(j => (j.id === updated.id ? updated : j)) : []
+      );
+      await fetchJobs();
       setModalJob(null);
     } catch (err) {
       console.error("Status update failed:", err);
@@ -24,7 +25,7 @@ const AdminDashboard = ({ onLogout }) => {
 
   const handleJobCreated = async () => {
     setShowCreateModal(false);
-    await fetchJobs(); // refresh immediately after job creation
+    await fetchJobs();
   };
 
   const jobList = Array.isArray(jobs) ? jobs : [];
@@ -70,8 +71,8 @@ const AdminDashboard = ({ onLogout }) => {
       {modalJob && (
         <AdminReviewModal
           job={modalJob}
-          onApprove={() => handleStatusUpdate(modalJob.id, "Approved")}
-          onReject={() => handleStatusUpdate(modalJob.id, "Rejected")}
+          onApprove={(id) => handleStatusUpdate(id, "Approved")}
+          onReject={(id) => handleStatusUpdate(id, "Rejected")}
           onClose={() => setModalJob(null)}
         />
       )}

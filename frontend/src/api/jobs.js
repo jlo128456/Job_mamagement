@@ -23,49 +23,33 @@ export async function loadData(API_BASE_URL) {
 }
 
 // Update job status (e.g., Onsite → Completed)
-export async function updateJobStatus(id, currentStatus, API_BASE_URL, overrideStatus = null) {
+export async function updateJobStatus(id, newStatus, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
+  const time = new Date().toISOString();
+
   try {
-    const jobRes = await fetch(`${base}/jobs/${id}`);
-    if (!jobRes.ok) throw new Error('Job not found');
-    const job = await jobRes.json();
-
-    const time = new Date().toISOString();
-    let status = overrideStatus || job.status;
-    let contractorStatus = job.contractor_status;
-
-    if (!overrideStatus) {
-      if (status === 'Pending') {
-        status = 'In Progress';
-        contractorStatus = 'In Progress';
-      } else if (status === 'In Progress') {
-        status = 'Completed - Pending Approval';
-        contractorStatus = 'Completed';
-      } else {
-        throw new Error('Cannot change job status further.');
-      }
-    }
-
-    const updatedJob = {
-      ...job,
-      status,
-      contractor_status: contractorStatus,
-      status_timestamp: time,
-    };
-
-    const putRes = await fetch(`${base}/jobs/${id}`, {
-      method: 'PUT',
+    const res = await fetch(`${base}/jobs/${id}`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedJob),
+      credentials: 'include',
+      body: JSON.stringify({
+        status: newStatus,
+        status_timestamp: time
+      }),
     });
 
-    if (!putRes.ok) throw new Error('Update failed');
-    return await putRes.json();
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Failed to update status');
+    }
+
+    return await res.json();
   } catch (err) {
     console.error('Error updating job:', err);
     throw err;
   }
 }
+
 
 // Delete a job
 export async function deleteJob(id, API_BASE_URL) {
