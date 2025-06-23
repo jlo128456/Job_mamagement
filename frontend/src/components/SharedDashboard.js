@@ -8,9 +8,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
   const [activeJobId, setActiveJobId] = useState(null);
 
   useEffect(() => {
-    fetchJobs(); // initial fetch
-    const interval = setInterval(fetchJobs, 30000); // refresh every 30 seconds
-    return () => clearInterval(interval);
+    fetchJobs(true); // always fetch fresh when entering dashboard
   }, [fetchJobs]);
 
   const filteredJobs = Array.isArray(jobs)
@@ -40,15 +38,13 @@ function SharedDashboard({ role, onLogout, onComplete }) {
           </thead>
           <tbody>
             {filteredJobs.length === 0 ? (
-              <tr>
-                <td colSpan="6">No jobs found for this {role}.</td>
-              </tr>
+              <tr><td colSpan="6">No jobs found for this {role}.</td></tr>
             ) : (
               filteredJobs.map(job => (
                 <JobRow
                   key={job.id}
                   job={job}
-                  refreshJobs={fetchJobs}
+                  refreshJobs={() => fetchJobs(true)}
                   onComplete={onComplete}
                   onOpenModal={() => setActiveJobId(job.id)}
                 />
@@ -63,7 +59,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
           jobId={activeJobId}
           onClose={() => {
             setActiveJobId(null);
-            fetchJobs?.();
+            fetchJobs(true);
           }}
         />
       )}
@@ -72,3 +68,4 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 }
 
 export default SharedDashboard;
+

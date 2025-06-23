@@ -7,26 +7,18 @@ import AdminReviewModal from "./AdminReviewModal";
 import CreateJobModal from "./modals/CreateJobModal";
 
 const AdminDashboard = ({ onLogout }) => {
-  const { jobs, setJobs, fetchJobs } = useContext(AppContext);
+  const { jobs, restartPolling } = useContext(AppContext);
   const [modalJob, setModalJob] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleStatusUpdate = async (jobId, newStatus) => {
     try {
-      const updated = await updateJobStatus(jobId, newStatus);
-      setJobs(prev =>
-        Array.isArray(prev) ? prev.map(j => (j.id === updated.id ? updated : j)) : []
-      );
-      await fetchJobs();
+      await updateJobStatus(jobId, newStatus);
+      restartPolling(); // force refresh for all views
       setModalJob(null);
     } catch (err) {
       console.error("Status update failed:", err);
     }
-  };
-
-  const handleJobCreated = async () => {
-    setShowCreateModal(false);
-    await fetchJobs();
   };
 
   const jobList = Array.isArray(jobs) ? jobs : [];
@@ -57,7 +49,7 @@ const AdminDashboard = ({ onLogout }) => {
           {jobList.length === 0 ? (
             <tr><td colSpan="7">No jobs found</td></tr>
           ) : jobList.map(job => {
-            const showActions = ["Completed - Pending Approval", "Completed"].includes(job.status);
+            const showActions = job.status === "Completed - Pending Approval";
             const statusClass = getStatusClass(job.status);
             return (
               <tr key={job.id}>
@@ -65,7 +57,7 @@ const AdminDashboard = ({ onLogout }) => {
                 <td>{job.customer_name || 'N/A'}</td>
                 <td>{job.contractor || 'N/A'}</td>
                 <td>{job.role || 'N/A'}</td>
-                <td className={`status-cell ${statusClass}`}>{job.status || 'N/A'}</td>
+                <td className={`status-cell ${statusClass}`}>{job.status}</td>
                 <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated'}</td>
                 <td>{showActions && <button onClick={() => setModalJob(job)}>Review</button>}</td>
               </tr>
@@ -87,7 +79,7 @@ const AdminDashboard = ({ onLogout }) => {
         <CreateJobModal
           isOpen
           onClose={() => setShowCreateModal(false)}
-          onJobCreated={handleJobCreated}
+          onJobCreated={restartPolling}
         />
       )}
     </section>
@@ -95,3 +87,5 @@ const AdminDashboard = ({ onLogout }) => {
 };
 
 export default AdminDashboard;
+
+
