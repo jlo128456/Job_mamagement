@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import JobRow from './JobRow';
 import UpdateJobModal from './UpdateJobModal/UpdateJobModal';
@@ -6,6 +6,12 @@ import UpdateJobModal from './UpdateJobModal/UpdateJobModal';
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
   const [activeJobId, setActiveJobId] = useState(null);
+
+  useEffect(() => {
+    fetchJobs(); // initial fetch
+    const interval = setInterval(fetchJobs, 30000); // refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [fetchJobs]);
 
   const filteredJobs = Array.isArray(jobs)
     ? jobs.filter(job =>

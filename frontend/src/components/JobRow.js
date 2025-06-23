@@ -17,8 +17,10 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
 
   const rawStatus = job?.contractor_status || job?.status || 'Unknown';
 
+  // Show "Completed" to contractor or technician if job was Approved
   const displayStatus =
-    rawStatus === 'Approved' && (job.role === 'contractor' || job.role === 'technician')
+    rawStatus === 'Approved' &&
+    (user?.role === 'contractor' || user?.role === 'technician')
       ? 'Completed'
       : rawStatus;
 
@@ -50,7 +52,7 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault();
             alert(`Customer Address: ${job.customer_address}`);
             window.open(mapsUrl, '_blank');
@@ -74,4 +76,3 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
 }
 
 export default JobRow;
-
