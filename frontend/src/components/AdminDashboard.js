@@ -69,8 +69,8 @@ const AdminDashboard = ({ onLogout }) => {
       {modalJob && (
         <AdminReviewModal
           job={modalJob}
-          onApprove={(id) => handleStatusUpdate(id, "Approved")}
-          onReject={(id) => handleStatusUpdate(id, "Rejected")}
+          onApprove={(id) => handleStatusUpdate(id, "Completed")}
+          onReject={(id) => handleStatusUpdate(id, "Pending")}
           onClose={() => setModalJob(null)}
         />
       )}
