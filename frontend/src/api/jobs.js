@@ -36,22 +36,21 @@ export async function updateJobStatus(id, overrideStatus = null, API_BASE_URL) {
 
     if (overrideStatus) {
       switch (overrideStatus) {
-        case 'Approved':
-          status = 'Approved';
-          break;
-        case 'Rejected':
-          status = 'Pending';
-          contractorStatus = 'Pending';
-          break;
+        case 'Approved': // Treat "Approved" as "Completed"
         case 'Completed':
           status = 'Completed';
           contractorStatus = 'Completed';
+          break;
+        case 'Rejected':
+        case 'Pending':
+          status = 'Pending';
+          contractorStatus = 'Pending';
           break;
         default:
           throw new Error('Invalid override status.');
       }
     } else {
-      // Normal technician/contractor flow
+      // Default contractor flow
       if (status === 'Pending') {
         status = 'In Progress';
         contractorStatus = 'In Progress';
@@ -83,6 +82,7 @@ export async function updateJobStatus(id, overrideStatus = null, API_BASE_URL) {
     throw err;
   }
 }
+
 
 // Delete a job
 export async function deleteJob(id, API_BASE_URL) {
