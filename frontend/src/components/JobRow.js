@@ -76,7 +76,10 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
         {job.status === 'Pending' && (
           <button onClick={handleOnsite}>Onsite</button>
         )}
-        <button onClick={handleCompletedClick}>Job Completed</button>
+        {job.status !== 'Completed' &&
+         job.status !== 'Completed - Pending Approval' && (
+          <button onClick={handleCompletedClick}>Job Completed</button>
+        )}
       </td>
     </tr>
   );
