@@ -11,12 +11,15 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
     ? formatForDisplayLocal(job.required_date)
     : 'N/A';
 
-  const loggedTime = job?.onsite_time
+  const onsiteTime = job?.onsite_time
     ? formatForDisplayLocal(job.onsite_time)
     : 'Not Logged';
 
-  const rawStatus = job?.contractor_status || job?.status || 'Unknown';
+  const updatedTime = job?.status_timestamp
+    ? formatForDisplayLocal(job.status_timestamp)
+    : 'Not Updated';
 
+  const rawStatus = job?.contractor_status || job?.status || 'Unknown';
   const displayStatus =
     rawStatus === 'Approved' &&
     (user?.role === 'contractor' || user?.role === 'technician')
@@ -24,10 +27,7 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
       : rawStatus;
 
   const statusClass = `status-cell ${getStatusClass(displayStatus)}`;
-
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    job.customer_address || ''
-  )}`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address || '')}`;
 
   const handleOnsite = async () => {
     try {
@@ -71,7 +71,8 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
       </td>
       <td>{requiredDate}</td>
       <td className={statusClass}>{displayStatus}</td>
-      <td>{loggedTime}</td>
+      <td>{onsiteTime}</td>
+      <td>{updatedTime}</td>
       <td>
         {job.status === 'Pending' && (
           <button onClick={handleOnsite}>Onsite</button>
