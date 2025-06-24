@@ -4,7 +4,10 @@ export const AppContext = createContext();
 
 const initialState = {
   API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
-  user: null, jobs: [], users: [], timezone: '',
+  user: null,
+  jobs: [],
+  users: [],
+  timezone: '',
 };
 
 function reducer(state, action) {
@@ -20,49 +23,48 @@ function jobsChanged(a, b) {
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const pollingRef = useRef(), started = useRef(false), stableCount = useRef(0);
+  const pollingRef = useRef(null);
+  const stableCount = useRef(0);
 
   const fetchJobs = useCallback(async (force = false) => {
     try {
       const res = await fetch(`${state.API_BASE_URL}/jobs`);
+      if (!res.ok) throw new Error('Failed to fetch jobs');
       const data = await res.json();
+
       if (force || jobsChanged(data, state.jobs)) {
         dispatch({ type: 'jobs', payload: data });
         stableCount.current = 0;
-      } else if (++stableCount.current >= 1) {
-        clearInterval(pollingRef.current);
-        started.current = false;
+      } else {
+        stableCount.current++;
+        if (stableCount.current >= 1) {
+          clearInterval(pollingRef.current);
+        }
       }
     } catch (err) {
-      console.error("Job fetch error:", err);
+      console.error('Job fetch error:', err);
     }
   }, [state.API_BASE_URL, state.jobs]);
 
-  const restartPolling = () => {
+  const triggerJobRefresh = () => {
     clearInterval(pollingRef.current);
-    fetchJobs(true);
-    pollingRef.current = setInterval(fetchJobs, 30000);
-    started.current = true;
+    fetchJobs(true); // force update now
+    pollingRef.current = setInterval(() => fetchJobs(), 30000); // poll for short time to catch backend update
+    setTimeout(() => clearInterval(pollingRef.current), 10000); // auto stop polling after 10s
   };
 
   useEffect(() => {
-    dispatch({ type: 'timezone', payload: Intl.DateTimeFormat().resolvedOptions().timeZone });
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    dispatch({ type: 'timezone', payload: tz });
   }, []);
 
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    fetchJobs();
-    pollingRef.current = setInterval(fetchJobs, 30000);
-    return () => clearInterval(pollingRef.current);
-  }, [fetchJobs]);
-
   const setters = {
-    setUser: v => dispatch({ type: 'user', payload: v }),
-    setJobs: v => dispatch({ type: 'jobs', payload: v }),
-    setUsers: v => dispatch({ type: 'users', payload: v }),
-    setTimezone: v => dispatch({ type: 'timezone', payload: v }),
-    fetchJobs, restartPolling
+    setUser: (v) => dispatch({ type: 'user', payload: v }),
+    setJobs: (v) => dispatch({ type: 'jobs', payload: v }),
+    setUsers: (v) => dispatch({ type: 'users', payload: v }),
+    setTimezone: (v) => dispatch({ type: 'timezone', payload: v }),
+    fetchJobs,
+    triggerJobRefresh, // 🔁 call this from onsite/approve/etc buttons
   };
 
   return (
