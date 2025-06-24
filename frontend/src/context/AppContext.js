@@ -42,7 +42,7 @@ export function AppProvider({ children }) {
   const restartPolling = useCallback(() => {
     clearInterval(pollingRef.current);
     fetchJobs(); // immediate update
-    pollingRef.current = setInterval(() => fetchJobs(), 10000); // refresh every 10s
+    pollingRef.current = setInterval(() => fetchJobs(), 5000); // refresh every 10s
   }, [fetchJobs]);
 
   useEffect(() => {
