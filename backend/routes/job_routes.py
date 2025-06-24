@@ -61,21 +61,29 @@ def patch_job(job_id):
     now = datetime.utcnow()
 
     try:
+        # Apply standard fields
         for field in [
             "customer_name", "contact_name", "travel_time", "labour_hours",
-            "work_performed", "status", "contractor_status", "checklist", "signature"
+            "work_performed", "checklist", "signature"
         ]:
             if field in data:
                 setattr(job, field, data[field])
 
+        # Handle status and contractor_status
         new_status = data.get("status")
-        if new_status and new_status != job.status:
-            if new_status == "Approved" and getattr(current_user, "role", None) != "admin":
-                return jsonify({"error": "Only admin can approve jobs"}), 403
-            job.status = new_status
+        new_contractor_status = data.get("contractor_status")
+
+        if (new_status and new_status != job.status) or (new_contractor_status and new_contractor_status != job.contractor_status):
+            if new_status:
+                if new_status == "Approved" and getattr(current_user, "role", None) != "admin":
+                    return jsonify({"error": "Only admin can approve jobs"}), 403
+                job.status = new_status
+            if new_contractor_status:
+                job.contractor_status = new_contractor_status
             job.status_timestamp = now
 
-        if "onsite_time" in data:
+        # Set onsite time only if not already set
+        if "onsite_time" in data and not job.onsite_time:
             job.onsite_time = now
 
         db.session.commit()
