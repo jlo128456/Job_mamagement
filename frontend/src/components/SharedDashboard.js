@@ -8,7 +8,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
   const [activeJobId, setActiveJobId] = useState(null);
 
   useEffect(() => {
-    fetchJobs(true); // always fetch fresh when entering dashboard
+    fetchJobs(true); // fetch once on mount
   }, [fetchJobs]);
 
   const filteredJobs = Array.isArray(jobs)
@@ -59,7 +59,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
           jobId={activeJobId}
           onClose={() => {
             setActiveJobId(null);
-            fetchJobs(true);
+            fetchJobs(true); // refresh after update
           }}
         />
       )}
@@ -68,4 +68,3 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 }
 
 export default SharedDashboard;
-

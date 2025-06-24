@@ -24,7 +24,6 @@ function jobsChanged(a, b) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const pollingRef = useRef(null);
-  const stableCount = useRef(0);
 
   const fetchJobs = useCallback(async (force = false) => {
     try {
@@ -34,24 +33,17 @@ export function AppProvider({ children }) {
 
       if (force || jobsChanged(data, state.jobs)) {
         dispatch({ type: 'jobs', payload: data });
-        stableCount.current = 0;
-      } else {
-        stableCount.current++;
-        if (stableCount.current >= 1) {
-          clearInterval(pollingRef.current);
-        }
       }
     } catch (err) {
       console.error('Job fetch error:', err);
     }
   }, [state.API_BASE_URL, state.jobs]);
 
-  const triggerJobRefresh = () => {
+  const restartPolling = useCallback(() => {
     clearInterval(pollingRef.current);
-    fetchJobs(true); // force update now
-    pollingRef.current = setInterval(() => fetchJobs(), 30000); // poll for short time to catch backend update
-    setTimeout(() => clearInterval(pollingRef.current), 10000); // auto stop polling after 10s
-  };
+    fetchJobs(true); // immediate update
+    pollingRef.current = setInterval(() => fetchJobs(), 10000); // refresh every 10s
+  }, [fetchJobs]);
 
   useEffect(() => {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -64,7 +56,7 @@ export function AppProvider({ children }) {
     setUsers: (v) => dispatch({ type: 'users', payload: v }),
     setTimezone: (v) => dispatch({ type: 'timezone', payload: v }),
     fetchJobs,
-    triggerJobRefresh, // 🔁 call this from onsite/approve/etc buttons
+    restartPolling,
   };
 
   return (

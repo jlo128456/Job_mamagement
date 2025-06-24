@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import { formatForDisplayLocal } from "../utils/timeUtils";
 import { updateJobStatus } from "../api/jobs";
@@ -11,10 +11,14 @@ const AdminDashboard = ({ onLogout }) => {
   const [modalJob, setModalJob] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  useEffect(() => {
+    restartPolling(); // Start polling on mount
+  }, [restartPolling]);
+
   const handleStatusUpdate = async (jobId, newStatus) => {
     try {
       await updateJobStatus(jobId, newStatus);
-      restartPolling(); // force refresh for all views
+      restartPolling(); // Refresh after status change
       setModalJob(null);
     } catch (err) {
       console.error("Status update failed:", err);
@@ -87,5 +91,4 @@ const AdminDashboard = ({ onLogout }) => {
 };
 
 export default AdminDashboard;
-
 
