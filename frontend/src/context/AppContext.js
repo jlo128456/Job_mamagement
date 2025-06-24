@@ -49,10 +49,38 @@ export function AppProvider({ children }) {
   }, [state.API_BASE_URL, state.jobs]);
 
   const restartPolling = useCallback(() => {
-    clearInterval(pollingRef.current);
-    fetchJobs(true); // force fetch now
-    pollingRef.current = setInterval(() => fetchJobs(), 5000); // poll every 5 sec
-  }, [fetchJobs]);
+  if (pollingRef.current) clearInterval(pollingRef.current);
+
+  let lastData = null;
+  stableCount.current = 0;
+
+  const intervalFn = async () => {
+    try {
+      const res = await fetch(`${state.API_BASE_URL}/jobs`);
+      if (!res.ok) throw new Error('Failed to fetch jobs');
+      const data = await res.json();
+
+      if (!lastData || jobsChanged(data, lastData)) {
+        dispatch({ type: 'jobs', payload: data });
+        stableCount.current = 0;
+        lastData = data;
+      } else {
+        stableCount.current++;
+        if (stableCount.current >= 2) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+          console.log('Polling stopped: no job changes');
+        }
+      }
+    } catch (err) {
+      console.error('Polling error:', err);
+    }
+  };
+
+  intervalFn(); // immediate first fetch
+  pollingRef.current = setInterval(intervalFn, 5000); // then every 5s
+}, [state.API_BASE_URL]);
+
 
   useEffect(() => {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;

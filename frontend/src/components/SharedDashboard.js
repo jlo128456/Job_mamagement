@@ -4,12 +4,17 @@ import JobRow from './JobRow';
 import UpdateJobModal from './UpdateJobModal/UpdateJobModal';
 
 function SharedDashboard({ role, onLogout, onComplete }) {
-  const { user, jobs, fetchJobs } = useContext(AppContext);
+  const { user, jobs, restartPolling, fetchJobs } = useContext(AppContext);
   const [activeJobId, setActiveJobId] = useState(null);
 
   useEffect(() => {
-    fetchJobs(true); // fetch once on mount
-  }, [fetchJobs]);
+    restartPolling(); // Start polling ONCE
+    const handleStorage = (e) => {
+      if (e.key === 'jobUpdated') restartPolling(); // Cross-tab update
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [restartPolling]); // restartPolling is stable (useCallback)
 
   const filteredJobs = Array.isArray(jobs)
     ? jobs.filter(job =>
@@ -59,7 +64,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
           jobId={activeJobId}
           onClose={() => {
             setActiveJobId(null);
-            fetchJobs(true); // refresh after update
+            fetchJobs(true);
           }}
         />
       )}
