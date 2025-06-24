@@ -52,6 +52,7 @@ def create_job():
         return jsonify({"error": str(e)}), 400
 
 @job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
+@job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
 def patch_job(job_id):
     job = Job.query.get(job_id)
     if not job:
@@ -61,30 +62,28 @@ def patch_job(job_id):
     now = datetime.utcnow()
 
     try:
-        # Apply standard fields
+        # General fields to update
         for field in [
             "customer_name", "contact_name", "travel_time", "labour_hours",
-            "work_performed", "checklist", "signature"
+            "work_performed", "status", "contractor_status", "checklist", "signature"
         ]:
             if field in data:
                 setattr(job, field, data[field])
 
-        # Handle status and contractor_status
+        # Handle status update and timestamp
         new_status = data.get("status")
-        new_contractor_status = data.get("contractor_status")
-
-        if (new_status and new_status != job.status) or (new_contractor_status and new_contractor_status != job.contractor_status):
-            if new_status:
-                if new_status == "Approved" and getattr(current_user, "role", None) != "admin":
-                    return jsonify({"error": "Only admin can approve jobs"}), 403
-                job.status = new_status
-            if new_contractor_status:
-                job.contractor_status = new_contractor_status
+        if new_status and new_status != job.status:
+            if new_status == "Approved" and getattr(current_user, "role", None) != "admin":
+                return jsonify({"error": "Only admin can approve jobs"}), 403
+            job.status = new_status
             job.status_timestamp = now
 
-        # Set onsite time only if not already set
-        if "onsite_time" in data and not job.onsite_time:
-            job.onsite_time = now
+        # Overwrite onsite_time if provided
+        if "onsite_time" in data:
+            try:
+                job.onsite_time = datetime.fromisoformat(data["onsite_time"])
+            except Exception:
+                job.onsite_time = now  # fallback to now if invalid format
 
         db.session.commit()
         return jsonify(job.to_dict()), 200
@@ -92,3 +91,4 @@ def patch_job(job_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+
