@@ -4,17 +4,13 @@ import JobRow from './JobRow';
 import UpdateJobModal from './UpdateJobModal/UpdateJobModal';
 
 function SharedDashboard({ role, onLogout, onComplete }) {
-  const { user, jobs, restartPolling, fetchJobs } = useContext(AppContext);
+  const { user, jobs, fetchJobs } = useContext(AppContext);
   const [activeJobId, setActiveJobId] = useState(null);
 
   useEffect(() => {
-    restartPolling(); // Start polling ONCE
-    const handleStorage = (e) => {
-      if (e.key === 'jobUpdated') restartPolling(); // Cross-tab update
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, [restartPolling]); // restartPolling is stable (useCallback)
+    fetchJobs(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredJobs = Array.isArray(jobs)
     ? jobs.filter(job =>
@@ -37,13 +33,14 @@ function SharedDashboard({ role, onLogout, onComplete }) {
               <th>Customer</th>
               <th>Required Date</th>
               <th>Status</th>
-              <th>Logged Time</th>
+              <th>Onsite Time</th>
+              <th>Updated</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredJobs.length === 0 ? (
-              <tr><td colSpan="6">No jobs found for this {role}.</td></tr>
+              <tr><td colSpan="7">No jobs found for this {role}.</td></tr>
             ) : (
               filteredJobs.map(job => (
                 <JobRow
@@ -73,3 +70,4 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 }
 
 export default SharedDashboard;
+
