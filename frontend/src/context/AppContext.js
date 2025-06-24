@@ -14,9 +14,9 @@ function reducer(state, action) {
   return { ...state, [action.type]: action.payload };
 }
 
-function jobsChanged(a, b) {
-  return a.length !== b.length || !a.every((j, i) => {
-    const o = b[i];
+function jobsChanged(newJobs, prevJobs) {
+  return newJobs.length !== prevJobs.length || !newJobs.every((j, i) => {
+    const o = prevJobs[i];
     return j.id === o?.id && j.status === o?.status && j.status_timestamp === o?.status_timestamp;
   });
 }
@@ -24,6 +24,7 @@ function jobsChanged(a, b) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const pollingRef = useRef(null);
+  const stableCount = useRef(0);
 
   const fetchJobs = useCallback(async (force = false) => {
     try {
@@ -33,6 +34,14 @@ export function AppProvider({ children }) {
 
       if (force || jobsChanged(data, state.jobs)) {
         dispatch({ type: 'jobs', payload: data });
+        stableCount.current = 0;
+      } else {
+        stableCount.current++;
+        if (stableCount.current >= 2) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+          console.log('Polling stopped: no change in jobs');
+        }
       }
     } catch (err) {
       console.error('Job fetch error:', err);
@@ -41,8 +50,8 @@ export function AppProvider({ children }) {
 
   const restartPolling = useCallback(() => {
     clearInterval(pollingRef.current);
-    fetchJobs(); // immediate update
-    pollingRef.current = setInterval(() => fetchJobs(), 5000); // refresh every 10s
+    fetchJobs(true); // force fetch now
+    pollingRef.current = setInterval(() => fetchJobs(), 5000); // poll every 5 sec
   }, [fetchJobs]);
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import { moveJobToInProgress } from '../api/jobs';
 import { getStatusClass } from '../utils/statusUtils';
 
 function JobRow({ job, refreshJobs, onOpenModal }) {
-  const { user } = useContext(AppContext);
+  const { user, restartPolling } = useContext(AppContext);
 
   const requiredDate = job?.required_date
     ? formatForDisplayLocal(job.required_date)
@@ -17,7 +17,6 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
 
   const rawStatus = job?.contractor_status || job?.status || 'Unknown';
 
-  // Show "Completed" to contractor or technician if job was Approved
   const displayStatus =
     rawStatus === 'Approved' &&
     (user?.role === 'contractor' || user?.role === 'technician')
@@ -33,10 +32,18 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
   const handleOnsite = async () => {
     try {
       await moveJobToInProgress(job.id);
+      localStorage.setItem('jobUpdated', Date.now());
+      restartPolling();
       refreshJobs?.();
     } catch (e) {
       console.error('Failed to move job to In Progress', e);
     }
+  };
+
+  const handleCompletedClick = () => {
+    localStorage.setItem('jobUpdated', Date.now());
+    restartPolling();
+    onOpenModal();
   };
 
   return (
@@ -69,7 +76,7 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
         {job.status === 'Pending' && (
           <button onClick={handleOnsite}>Onsite</button>
         )}
-        <button onClick={onOpenModal}>Job Completed</button>
+        <button onClick={handleCompletedClick}>Job Completed</button>
       </td>
     </tr>
   );

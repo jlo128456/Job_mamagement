@@ -3,7 +3,7 @@ import { AppContext } from '../../context/AppContext';
 import UpdateJobForm from './UpdateJobForm';
 
 function UpdateJobModal({ jobId, onClose }) {
-  const { API_BASE_URL, userRole } = useContext(AppContext);
+  const { API_BASE_URL, userRole, restartPolling } = useContext(AppContext);
   const [form, setForm] = useState({ checklist: {} });
   const [job, setJob] = useState(null);
   const canvasRef = useRef(null);
@@ -42,7 +42,14 @@ function UpdateJobModal({ jobId, onClose }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    res.ok ? onClose() : alert('Update failed');
+
+    if (res.ok) {
+      localStorage.setItem('jobUpdated', Date.now());
+      restartPolling(); // Ensure admin dashboard refreshes
+      onClose();
+    } else {
+      alert('Update failed');
+    }
   };
 
   const start = e => {
@@ -67,26 +74,26 @@ function UpdateJobModal({ jobId, onClose }) {
   if (!job) return null;
 
   return (
-  <div className="modal-overlay" onClick={handleOverlayClick}>
-    <div className="modal-box" onClick={e => e.stopPropagation()}>
-      <button className="close-button" onClick={onClose}>×</button>
-      <h3>Update #{job.work_order}</h3>
-      <UpdateJobForm
-        form={form}
-        setForm={setForm}
-        canvasRef={canvasRef}
-        onSubmit={handleSubmit}
-        onClose={onClose}
-        updateForm={updateForm}
-        updateCheck={updateCheck}
-        drawing={drawing}
-        setDrawing={setDrawing}
-        start={start}
-        move={move}
-      />
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <button className="close-button" onClick={onClose}>×</button>
+        <h3>Update #{job.work_order}</h3>
+        <UpdateJobForm
+          form={form}
+          setForm={setForm}
+          canvasRef={canvasRef}
+          onSubmit={handleSubmit}
+          onClose={onClose}
+          updateForm={updateForm}
+          updateCheck={updateCheck}
+          drawing={drawing}
+          setDrawing={setDrawing}
+          start={start}
+          move={move}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default UpdateJobModal;
