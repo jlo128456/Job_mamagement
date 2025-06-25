@@ -47,27 +47,33 @@ const AdminDashboard = ({ onLogout }) => {
             <th>Contractor</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Onsite Time</th> 
+            <th>Onsite Time</th>
             <th>Updated</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {Array.isArray(jobs) && jobs.length > 0 ? jobs.map(job => {
-            const showBtn = job.status === "Completed - Pending Approval";
-            return (
-              <tr key={job.id}>
-                <td>{job.work_order || 'N/A'}</td>
-                <td>{job.customer_name || 'N/A'}</td>
-                <td>{job.contractor || 'N/A'}</td>
-                <td>{job.role || 'N/A'}</td>
-                <td className={`status-cell ${getStatusClass(job.status)}`}>{job.status}</td>
-                <td>{job.onsite_time ? formatForDisplayLocal(job.onsite_time) : 'Not Logged'}</td> {/* ✅ NEW */}
-                <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated'}</td>
-                <td>{showBtn && <button onClick={() => setModalJob(job)}>Review</button>}</td>
-              </tr>
-            );
-          }) : <tr><td colSpan="8">No jobs found</td></tr>}
+          {Array.isArray(jobs) && jobs.length > 0 ? (
+            jobs.map((job) => {
+              const showBtn = job.status === "Completed - Pending Approval";
+              return (
+                <tr key={job.id}>
+                  <td>{job.work_order || "N/A"}</td>
+                  <td>{job.customer_name || "N/A"}</td>
+                  <td>{job.contractor || "N/A"}</td>
+                  <td>{job.role || "N/A"}</td>
+                  <td className={`status-cell ${getStatusClass(job.status)}`}>{job.status}</td>
+                  <td>{job.onsite_time ? formatForDisplayLocal(job.onsite_time) : "Not Logged"}</td>
+                  <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : "Not Updated"}</td>
+                  <td>{showBtn && <button onClick={() => setModalJob(job)}>Review</button>}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="8">No jobs found</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
@@ -90,5 +96,4 @@ const AdminDashboard = ({ onLogout }) => {
     </section>
   );
 };
-
 export default AdminDashboard;
