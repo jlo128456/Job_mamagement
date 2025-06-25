@@ -40,7 +40,9 @@ function SharedDashboard({ role, onLogout, onComplete }) {
           </thead>
           <tbody>
             {filteredJobs.length === 0 ? (
-              <tr><td colSpan="7">No jobs found for this {role}.</td></tr>
+              <tr>
+                <td colSpan="7">No jobs found for this {role}.</td>
+              </tr>
             ) : (
               filteredJobs.map(job => (
                 <JobRow
@@ -70,4 +72,3 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 }
 
 export default SharedDashboard;
-
