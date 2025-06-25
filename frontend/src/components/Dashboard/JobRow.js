@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../context/AppContext';
-import { formatForDisplayLocal } from '../utils/timeUtils';
-import { moveJobToInProgress } from '../api/jobs';
-import { getStatusClass } from '../utils/statusUtils';
+import { AppContext } from '../../context/AppContext';
+import { formatForDisplayLocal } from '../../utils/timeUtils';
+import { moveJobToInProgress } from '../../api/jobs';
+import { getStatusClass } from '../../utils/statusUtils';
 
 function JobRow({ job, refreshJobs, onOpenModal }) {
   const { user, restartPolling } = useContext(AppContext);

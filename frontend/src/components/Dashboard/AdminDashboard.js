@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect } from "react";
-import { AppContext } from "../context/AppContext";
-import { updateJobStatus } from "../api/jobs";
-import { formatForDisplayLocal } from "../utils/timeUtils";
-import { getStatusClass } from "../utils/statusUtils";
-import AdminReviewModal from "./AdminReviewModal";
-import CreateJobModal from "./modals/CreateJobModal";
+import { AppContext } from "../../context/AppContext";
+import { updateJobStatus } from "../../api/jobs";
+import { formatForDisplayLocal } from "../../utils/timeUtils";
+import { getStatusClass } from "../../utils/statusUtils";
+import AdminReviewModal from "../Dashboard/AdminReviewModal";
+import CreateJobModal from "../modals/CreateJobModal";
 
 const AdminDashboard = ({ onLogout }) => {
   const { jobs, restartPolling } = useContext(AppContext);

@@ -1,10 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AppProvider, AppContext } from './context/AppContext';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import AdminDashboard from './components/AdminDashboard';
-import SharedDashboard from './components/SharedDashboard';
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+import AdminDashboard from './components/Dashboard/AdminDashboard';
+import SharedDashboard from './components/Dashboard/SharedDashboard';
 import LoginModal from './components/modals/LoginModal';
 
 function AppContent() {

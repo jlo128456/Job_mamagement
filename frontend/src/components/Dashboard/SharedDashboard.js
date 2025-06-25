@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../context/AppContext';
-import JobRow from './JobRow';
-import UpdateJobModal from './UpdateJobModal/UpdateJobModal';
+import { AppContext } from '../../context/AppContext';
+import JobRow from '../Dashboard/JobRow';
+import UpdateJobModal from '../UpdateJobModal/UpdateJobModal';
 
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
