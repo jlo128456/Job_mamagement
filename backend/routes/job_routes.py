@@ -1,14 +1,30 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 from models.models import db, Job, User, Machine
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 job_routes = Blueprint("job_routes", __name__, url_prefix="/jobs")
 
 @job_routes.route("/", methods=["GET"], strict_slashes=False)
 def get_jobs():
-    return jsonify([j.to_dict() for j in Job.query.all()]), 200
+    # Show jobs that are not completed or completed within the last hour
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    jobs = Job.query.filter(
+        (Job.status != "Completed") |
+        (Job.completion_date != None and Job.completion_date >= one_hour_ago)
+    ).all()
+    return jsonify([j.to_dict() for j in jobs]), 200
+
+@job_routes.route("/archived", methods=["GET"], strict_slashes=False)
+def get_archived_jobs():
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    jobs = Job.query.filter(
+        Job.status == "Completed",
+        Job.completion_date != None,
+        Job.completion_date < one_hour_ago
+    ).order_by(Job.completion_date.desc()).all()
+    return jsonify([j.to_dict() for j in jobs]), 200
 
 @job_routes.route("/<int:job_id>", methods=["GET"], strict_slashes=False)
 def get_job(job_id):
@@ -58,21 +74,28 @@ def patch_job(job_id):
     d, now = request.get_json(), datetime.utcnow()
     try:
         for f in ["customer_name", "contact_name", "travel_time", "labour_hours", "work_performed", "status", "contractor_status", "signature"]:
-            if f in d: setattr(job, f, d[f])
+            if f in d:
+                setattr(job, f, d[f])
 
         if "checklist" in d:
             for k, v in d["checklist"].items():
                 ck_field = f"checklist_{k}"
-                if hasattr(job, ck_field): setattr(job, ck_field, v)
+                if hasattr(job, ck_field):
+                    setattr(job, ck_field, v)
 
         if d.get("status") and d["status"] != job.status:
             if d["status"] == "Approved" and getattr(current_user, "role", "") != "admin":
                 return jsonify({"error": "Only admin can approve"}), 403
-            job.status, job.status_timestamp = d["status"], now
+            job.status = d["status"]
+            job.status_timestamp = now
+            if d["status"] == "Completed":
+                job.completion_date = now  # Automatically set when marked completed
 
         if "onsite_time" in d:
-            try: job.onsite_time = datetime.fromisoformat(d["onsite_time"])
-            except: job.onsite_time = now
+            try:
+                job.onsite_time = datetime.fromisoformat(d["onsite_time"])
+            except:
+                job.onsite_time = now
 
         if "machines" in d:
             m_ids = json.loads(d["machines"]) if isinstance(d["machines"], str) else d["machines"]
