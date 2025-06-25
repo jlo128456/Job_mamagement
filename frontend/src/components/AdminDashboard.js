@@ -42,8 +42,14 @@ const AdminDashboard = ({ onLogout }) => {
       <table className="job-table">
         <thead>
           <tr>
-            <th>Work Order</th><th>Customer</th><th>Contractor</th>
-            <th>Role</th><th>Status</th><th>Updated</th><th>Actions</th>
+            <th>Work Order</th>
+            <th>Customer</th>
+            <th>Contractor</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Onsite Time</th> 
+            <th>Updated</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -56,11 +62,12 @@ const AdminDashboard = ({ onLogout }) => {
                 <td>{job.contractor || 'N/A'}</td>
                 <td>{job.role || 'N/A'}</td>
                 <td className={`status-cell ${getStatusClass(job.status)}`}>{job.status}</td>
+                <td>{job.onsite_time ? formatForDisplayLocal(job.onsite_time) : 'Not Logged'}</td> {/* ✅ NEW */}
                 <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated'}</td>
                 <td>{showBtn && <button onClick={() => setModalJob(job)}>Review</button>}</td>
               </tr>
             );
-          }) : <tr><td colSpan="7">No jobs found</td></tr>}
+          }) : <tr><td colSpan="8">No jobs found</td></tr>}
         </tbody>
       </table>
 
