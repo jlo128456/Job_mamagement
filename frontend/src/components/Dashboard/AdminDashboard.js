@@ -3,7 +3,7 @@ import { AppContext } from "../../context/AppContext";
 import { updateJobStatus } from "../../api/jobs";
 import AdminReviewModal from "../Dashboard/AdminReviewModal";
 import CreateJobModal from "../modals/CreateJobModal";
-import JobTable from "../Dashboard/JobTable";
+import JobTable from "../Dashboard/JobTable"; //  Ensure this is a default export
 
 const AdminDashboard = ({ onLogout }) => {
   const { jobs, restartPolling } = useContext(AppContext);
@@ -42,7 +42,8 @@ const AdminDashboard = ({ onLogout }) => {
         </div>
       </div>
 
-      <JobTable jobs={jobs} onReviewClick={setModalJob} />
+      {/* Modular table component */}
+      <JobTable jobs={Array.isArray(jobs) ? jobs : []} onReviewClick={setModalJob} />
 
       {modalJob && (
         <AdminReviewModal
