@@ -12,12 +12,21 @@ function SharedDashboard({ role, onLogout, onComplete }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+
   const filteredJobs = Array.isArray(jobs)
-    ? jobs.filter(job =>
-        role === 'contractor'
-          ? job.assigned_contractor === user?.id
-          : job.assigned_tech === user?.id
-      )
+    ? jobs.filter(job => {
+        const isAssigned =
+          role === 'contractor'
+            ? job.assigned_contractor === user?.id
+            : job.assigned_tech === user?.id;
+
+        const isStillVisible =
+          job.status !== 'Completed' ||
+          (job.status_timestamp && new Date(job.status_timestamp).getTime() > oneHourAgo);
+
+        return isAssigned && isStillVisible;
+      })
     : [];
 
   return (
