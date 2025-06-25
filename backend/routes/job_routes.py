@@ -1,13 +1,14 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
-from models.models import db, Job, User
+from models.models import db, Job, User, Machine
 from datetime import datetime
+import json
 
 job_routes = Blueprint("job_routes", __name__, url_prefix="/jobs")
 
 @job_routes.route("/", methods=["GET"], strict_slashes=False)
 def get_jobs():
-    return jsonify([job.to_dict() for job in Job.query.all()]), 200
+    return jsonify([j.to_dict() for j in Job.query.all()]), 200
 
 @job_routes.route("/<int:job_id>", methods=["GET"], strict_slashes=False)
 def get_job(job_id):
@@ -16,79 +17,69 @@ def get_job(job_id):
 
 @job_routes.route("/", methods=["POST"], strict_slashes=False)
 def create_job():
-    data = request.get_json()
-    role = data.get("role")
-    name = data.get("contractor")
-
+    d = request.get_json()
+    role, name = d.get("role"), d.get("contractor")
     if not role or not name:
-        return jsonify({"error": "Both role and contractor name are required"}), 400
+        return jsonify({"error": "Role and contractor required"}), 400
 
     user = User.query.filter_by(contractor=name).first()
     if not user:
-        return jsonify({"error": f"No user found with name '{name}'"}), 404
+        return jsonify({"error": f"No user with contractor name '{name}'"}), 404
 
     try:
-        required_date = data.get("required_date")
+        machines = json.loads(d.get("machines", "[]")) if isinstance(d.get("machines"), str) else d.get("machines", [])
         new_job = Job(
-            work_order=data.get("work_order"),
-            customer_name=data.get("customer_name"),
+            work_order=d.get("work_order"),
+            customer_name=d.get("customer_name"),
             contractor=name,
             role=role,
-            status=data.get("status", "Pending"),
-            machines=data.get("machines"),
-            required_date=datetime.strptime(required_date, "%Y-%m-%d") if required_date else None,
-            work_required=data.get("work_required"),
-            customer_address=data.get("customer_address"),
+            status=d.get("status", "Pending"),
+            required_date=datetime.strptime(d.get("required_date", ""), "%Y-%m-%d") if d.get("required_date") else None,
+            work_required=d.get("work_required"),
+            customer_address=d.get("customer_address"),
             created_at=datetime.utcnow(),
             assigned_contractor=user.id if role == "contractor" else None,
-            assigned_tech=user.id if role == "technician" else None
+            assigned_tech=user.id if role == "technician" else None,
+            machines=Machine.query.filter(Machine.machine_id.in_(machines)).all()
         )
         db.session.add(new_job)
         db.session.commit()
         return jsonify(new_job.to_dict()), 201
-
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
-@job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
 @job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
 def patch_job(job_id):
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
 
-    data = request.get_json()
-    now = datetime.utcnow()
-
+    d, now = request.get_json(), datetime.utcnow()
     try:
-        # General fields to update
-        for field in [
-            "customer_name", "contact_name", "travel_time", "labour_hours",
-            "work_performed", "status", "contractor_status", "checklist", "signature"
-        ]:
-            if field in data:
-                setattr(job, field, data[field])
+        for f in ["customer_name", "contact_name", "travel_time", "labour_hours", "work_performed", "status", "contractor_status", "signature"]:
+            if f in d: setattr(job, f, d[f])
 
-        # Handle status update and timestamp
-        new_status = data.get("status")
-        if new_status and new_status != job.status:
-            if new_status == "Approved" and getattr(current_user, "role", None) != "admin":
-                return jsonify({"error": "Only admin can approve jobs"}), 403
-            job.status = new_status
-            job.status_timestamp = now
+        if "checklist" in d:
+            for k, v in d["checklist"].items():
+                ck_field = f"checklist_{k}"
+                if hasattr(job, ck_field): setattr(job, ck_field, v)
 
-        # Overwrite onsite_time if provided
-        if "onsite_time" in data:
-            try:
-                job.onsite_time = datetime.fromisoformat(data["onsite_time"])
-            except Exception:
-                job.onsite_time = now  # fallback to now if invalid format
+        if d.get("status") and d["status"] != job.status:
+            if d["status"] == "Approved" and getattr(current_user, "role", "") != "admin":
+                return jsonify({"error": "Only admin can approve"}), 403
+            job.status, job.status_timestamp = d["status"], now
+
+        if "onsite_time" in d:
+            try: job.onsite_time = datetime.fromisoformat(d["onsite_time"])
+            except: job.onsite_time = now
+
+        if "machines" in d:
+            m_ids = json.loads(d["machines"]) if isinstance(d["machines"], str) else d["machines"]
+            job.machines = Machine.query.filter(Machine.machine_id.in_(m_ids)).all()
 
         db.session.commit()
         return jsonify(job.to_dict()), 200
-
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
-
