@@ -4,7 +4,7 @@ import { formatForDisplayLocal } from '../../utils/timeUtils';
 import { moveJobToInProgress } from '../../api/jobs';
 import { getStatusClass } from '../../utils/statusUtils';
 
-function JobRow({ job, refreshJobs, onOpenModal }) {
+function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const { user, restartPolling } = useContext(AppContext);
 
   const requiredDate = job?.required_date
@@ -80,6 +80,9 @@ function JobRow({ job, refreshJobs, onOpenModal }) {
         {job.status !== 'Completed' &&
          job.status !== 'Completed - Pending Approval' && (
           <button onClick={handleCompletedClick}>Job Completed</button>
+        )}
+        {displayStatus === 'Completed' && onDismiss && (
+          <button onClick={() => onDismiss(job.id)}>Dismiss</button>
         )}
       </td>
     </tr>
