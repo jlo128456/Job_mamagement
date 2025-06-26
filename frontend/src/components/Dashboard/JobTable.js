@@ -2,7 +2,7 @@ import React from "react";
 import { formatForDisplayLocal } from "../../utils/timeUtils";
 import { getStatusClass } from "../../utils/statusUtils";
 
-function JobTable({ jobs, users = [], onReviewClick, onDismiss }) {
+function JobTable({ jobs, onReviewClick, onDismiss }) {
   return (
     <div className="table-wrapper">
       <table className="dashboard-table">
@@ -40,10 +40,6 @@ function JobTable({ jobs, users = [], onReviewClick, onDismiss }) {
               const status = job.status || "Unknown";
               const statusClass = `status-cell ${getStatusClass(status)}`;
 
-              const assignedId = job.assigned_user_id || job.assigned_tech || job.assigned_contractor;
-              const assignedUser = users.find(u => u.id === assignedId);
-              const assignedName = assignedUser ? assignedUser.name || assignedUser.full_name || assignedUser.email : "Unassigned";
-
               return (
                 <tr key={job.id}>
                   <td>{job.work_order}</td>
@@ -52,7 +48,13 @@ function JobTable({ jobs, users = [], onReviewClick, onDismiss }) {
                   <td className={statusClass}>{status}</td>
                   <td>{onsiteTime}</td>
                   <td>{updatedTime}</td>
-                  <td>{assignedName}</td>
+                  <td>
+                    {job.contractor
+                      ? `${job.contractor}`
+                      : job.technician
+                      ? `${job.technician}`
+                      : 'Unassigned'}
+                  </td>
                   <td>
                     {status === "Completed - Pending Approval" ? (
                       <button onClick={() => onReviewClick(job)}>Review</button>

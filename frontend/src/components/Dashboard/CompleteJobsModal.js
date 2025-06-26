@@ -25,7 +25,7 @@ const CompletedJobsModal = ({ jobs, onClose }) => {
                 <tr key={job.id}>
                   <td>{job.work_order}</td>
                   <td>{job.customer_name}</td>
-                  <td>{formatForDisplayLocal(job.completion_date)}</td>
+                  <td>{formatForDisplayLocal(job.status_timestamp)}</td>
                   <td className={getStatusClass(job.status)}>{job.status}</td>
                 </tr>
               ))}
