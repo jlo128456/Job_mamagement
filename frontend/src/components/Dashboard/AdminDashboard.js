@@ -7,7 +7,7 @@ import JobTable from "../Dashboard/JobTable";
 import CompleteJobModal from "../Dashboard/CompleteJobsModal";
 
 const AdminDashboard = ({ onLogout }) => {
-  const { jobs, restartPolling } = useContext(AppContext);
+  const { jobs, users, restartPolling } = useContext(AppContext);
   const [modalJob, setModalJob] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCompletedModal, setShowCompletedModal] = useState(false);
@@ -58,6 +58,7 @@ const AdminDashboard = ({ onLogout }) => {
 
       <JobTable
         jobs={activeJobs}
+        users={users} 
         onReviewClick={setModalJob}
         onDismiss={handleDismiss}
       />
