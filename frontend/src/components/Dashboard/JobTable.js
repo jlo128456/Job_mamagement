@@ -2,7 +2,7 @@ import React from "react";
 import { formatForDisplayLocal } from "../../utils/timeUtils";
 import { getStatusClass } from "../../utils/statusUtils";
 
-function JobTable({ jobs, onReviewClick }) {
+function JobTable({ jobs, onReviewClick, onDismiss }) {
   return (
     <div className="table-wrapper">
       <table className="dashboard-table">
@@ -49,6 +49,14 @@ function JobTable({ jobs, onReviewClick }) {
                   <td>{updatedTime}</td>
                   <td>
                     <button onClick={() => onReviewClick(job)}>Review</button>
+                    {status === "Completed" && (
+                      <button
+                        style={{ marginLeft: "0.5rem" }}
+                        onClick={() => onDismiss?.(job.id)}
+                      >
+                        Dismiss
+                      </button>
+                    )}
                   </td>
                 </tr>
               );

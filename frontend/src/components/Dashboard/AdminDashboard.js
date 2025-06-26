@@ -4,13 +4,18 @@ import { updateJobStatus } from "../../api/jobs";
 import AdminReviewModal from "../Dashboard/AdminReviewModal";
 import CreateJobModal from "../modals/CreateJobModal";
 import JobTable from "../Dashboard/JobTable";
-import CompleteJobModal from "../Dashboard/CompleteJobsModal"; // new modal
+import CompleteJobModal from "../Dashboard/CompleteJobsModal";
 
 const AdminDashboard = ({ onLogout }) => {
   const { jobs, restartPolling } = useContext(AppContext);
   const [modalJob, setModalJob] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCompletedModal, setShowCompletedModal] = useState(false);
+
+  const [dismissedJobs, setDismissedJobs] = useState(() => {
+    const stored = localStorage.getItem("dismissedJobs");
+    return stored ? JSON.parse(stored) : [];
+  });
 
   useEffect(() => {
     restartPolling();
@@ -30,15 +35,15 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  const now = new Date();
-  const activeJobs = jobs.filter(j =>
-    j.status !== "Completed" ||
-    (j.status_timestamp && new Date(j.status_timestamp) > new Date(now.getTime() - 60 * 60 * 1000))
-  );
+  const handleDismiss = (jobId) => {
+    const updated = [...dismissedJobs, jobId];
+    setDismissedJobs(updated);
+    localStorage.setItem("dismissedJobs", JSON.stringify(updated));
+  };
 
-  const completedJobs = jobs.filter(j =>
-  j.status === "Completed"
-);
+  const visibleJobs = jobs.filter((j) => !dismissedJobs.includes(j.id));
+  const activeJobs = visibleJobs.filter((j) => j.status !== "Completed");
+  const completedJobs = visibleJobs.filter((j) => j.status === "Completed");
 
   return (
     <section className="dashboard-container">
@@ -51,7 +56,11 @@ const AdminDashboard = ({ onLogout }) => {
         </div>
       </div>
 
-      <JobTable jobs={activeJobs} onReviewClick={setModalJob} />
+      <JobTable
+        jobs={activeJobs}
+        onReviewClick={setModalJob}
+        onDismiss={handleDismiss}
+      />
 
       {modalJob && (
         <AdminReviewModal
@@ -73,6 +82,7 @@ const AdminDashboard = ({ onLogout }) => {
       {showCompletedModal && (
         <CompleteJobModal
           jobs={completedJobs}
+          onDismiss={handleDismiss}
           onClose={() => setShowCompletedModal(false)}
         />
       )}
