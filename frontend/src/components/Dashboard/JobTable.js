@@ -48,15 +48,11 @@ function JobTable({ jobs, onReviewClick, onDismiss }) {
                   <td>{onsiteTime}</td>
                   <td>{updatedTime}</td>
                   <td>
-                    <button onClick={() => onReviewClick(job)}>Review</button>
-                    {status === "Completed" && (
-                      <button
-                        style={{ marginLeft: "0.5rem" }}
-                        onClick={() => onDismiss?.(job.id)}
-                      >
-                        Dismiss
-                      </button>
-                    )}
+                    {status === "Completed - Pending Approval" ? (
+                      <button onClick={() => onReviewClick(job)}>Review</button>
+                    ) : status === "Completed" ? (
+                      <button onClick={() => onDismiss?.(job.id)}>Dismiss</button>
+                    ) : null}
                   </td>
                 </tr>
               );
