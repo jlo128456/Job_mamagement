@@ -6,13 +6,12 @@ import UpdateJobModal from '../UpdateJobModal/UpdateJobModal';
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
   const [activeJobId, setActiveJobId] = useState(null);
+  const [dismissedIds, setDismissedIds] = useState([]);
 
   useEffect(() => {
     fetchJobs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const oneHourAgo = Date.now() - 60 * 60 * 1000;
 
   const filteredJobs = Array.isArray(jobs)
     ? jobs.filter(job => {
@@ -21,13 +20,14 @@ function SharedDashboard({ role, onLogout, onComplete }) {
             ? job.assigned_contractor === user?.id
             : job.assigned_tech === user?.id;
 
-        const isStillVisible =
-          job.status !== 'Completed' ||
-          (job.status_timestamp && new Date(job.status_timestamp).getTime() > oneHourAgo);
-
-        return isAssigned && isStillVisible;
+        const isDismissed = dismissedIds.includes(job.id);
+        return isAssigned && !isDismissed;
       })
     : [];
+
+  const handleDismiss = (jobId) => {
+    setDismissedIds(prev => [...prev, jobId]);
+  };
 
   return (
     <div className="dashboard-container">
@@ -60,6 +60,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
                   refreshJobs={() => fetchJobs(true)}
                   onComplete={onComplete}
                   onOpenModal={() => setActiveJobId(job.id)}
+                  onDismiss={() => handleDismiss(job.id)} // pass dismiss callback
                 />
               ))
             )}
