@@ -37,10 +37,8 @@ const AdminDashboard = ({ onLogout }) => {
   );
 
   const completedJobs = jobs.filter(j =>
-    j.status === "Completed" &&
-    j.status_timestamp &&
-    new Date(j.status_timestamp) <= new Date(now.getTime() - 60 * 60 * 1000)
-  );
+  j.status === "Completed"
+);
 
   return (
     <section className="dashboard-container">
