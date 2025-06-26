@@ -1,29 +1,14 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 from models.models import db, Job, User, Machine
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 
 job_routes = Blueprint("job_routes", __name__, url_prefix="/jobs")
 
 @job_routes.route("/", methods=["GET"], strict_slashes=False)
 def get_jobs():
-    # Show jobs that are not completed or completed within the last hour
-    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-    jobs = Job.query.filter(
-        (Job.status != "Completed") |
-        (Job.completion_date != None and Job.completion_date >= one_hour_ago)
-    ).all()
-    return jsonify([j.to_dict() for j in jobs]), 200
-
-@job_routes.route("/archived", methods=["GET"], strict_slashes=False)
-def get_archived_jobs():
-    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-    jobs = Job.query.filter(
-        Job.status == "Completed",
-        Job.completion_date != None,
-        Job.completion_date < one_hour_ago
-    ).order_by(Job.completion_date.desc()).all()
+    jobs = Job.query.order_by(Job.created_at.desc()).all()
     return jsonify([j.to_dict() for j in jobs]), 200
 
 @job_routes.route("/<int:job_id>", methods=["GET"], strict_slashes=False)
@@ -89,7 +74,7 @@ def patch_job(job_id):
             job.status = d["status"]
             job.status_timestamp = now
             if d["status"] == "Completed":
-                job.completion_date = now  # Automatically set when marked completed
+                job.completion_date = now
 
         if "onsite_time" in d:
             try:

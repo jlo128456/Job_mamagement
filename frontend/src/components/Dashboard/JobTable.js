@@ -2,7 +2,7 @@ import React from "react";
 import { formatForDisplayLocal } from "../../utils/timeUtils";
 import { getStatusClass } from "../../utils/statusUtils";
 
-const JobTable = React.memo(({ jobs, onReviewClick }) => {
+const JobTable = React.memo(({ jobs, onReviewClick, onDismiss }) => {
   return (
     <table className="job-table">
       <thead>
@@ -20,7 +20,9 @@ const JobTable = React.memo(({ jobs, onReviewClick }) => {
       <tbody>
         {Array.isArray(jobs) && jobs.length > 0 ? (
           jobs.map((job) => {
-            const showBtn = job.status === "Completed - Pending Approval";
+            const showReview = job.status === "Completed - Pending Approval";
+            const showDismiss = job.status === "Completed";
+
             return (
               <tr key={job.id}>
                 <td>{job.work_order || "N/A"}</td>
@@ -30,7 +32,12 @@ const JobTable = React.memo(({ jobs, onReviewClick }) => {
                 <td className={`status-cell ${getStatusClass(job.status)}`}>{job.status}</td>
                 <td>{job.onsite_time ? formatForDisplayLocal(job.onsite_time) : "Not Logged"}</td>
                 <td>{job.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : "Not Updated"}</td>
-                <td>{showBtn && <button onClick={() => onReviewClick(job)}>Review</button>}</td>
+                <td>
+                  {showReview && <button onClick={() => onReviewClick(job)}>Review</button>}
+                  {showDismiss && onDismiss && (
+                    <button onClick={() => onDismiss(job.id)}>Dismiss</button>
+                  )}
+                </td>
               </tr>
             );
           })
