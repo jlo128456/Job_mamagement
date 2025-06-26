@@ -7,17 +7,9 @@ import { getStatusClass } from '../../utils/statusUtils';
 function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const { user, restartPolling } = useContext(AppContext);
 
-  const requiredDate = job?.required_date
-    ? formatForDisplayLocal(job.required_date)
-    : 'N/A';
-
-  const onsiteTime = job?.onsite_time
-    ? formatForDisplayLocal(job.onsite_time)
-    : 'Not Logged';
-
-  const updatedTime = job?.status_timestamp
-    ? formatForDisplayLocal(job.status_timestamp)
-    : 'Not Updated';
+  const requiredDate = job?.required_date ? formatForDisplayLocal(job.required_date) : 'N/A';
+  const onsiteTime = job?.onsite_time ? formatForDisplayLocal(job.onsite_time) : 'Not Logged';
+  const updatedTime = job?.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated';
 
   const rawStatus = job?.contractor_status || job?.status || 'Unknown';
   const displayStatus =
@@ -48,10 +40,7 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
 
   return (
     <tr>
-      <td
-        style={{ cursor: 'pointer' }}
-        onClick={() => alert(`Work Required: ${job.work_required}`)}
-      >
+      <td style={{ cursor: 'pointer' }} onClick={() => alert(`Work Required: ${job.work_required}`)}>
         {job.work_order}
       </td>
       <td>
@@ -74,19 +63,15 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
       <td>{onsiteTime}</td>
       <td>{updatedTime}</td>
       <td>
-        {job.status === 'Pending' && (
-          <button onClick={handleOnsite}>Onsite</button>
+        {job.status === 'Pending' && <button onClick={handleOnsite}>Onsite</button>}
+        {job.status !== 'Completed' && job.status !== 'Completed - Pending Approval' && (
+          <button onClick={handleCompletedClick}>Job Completed</button>
         )}
-        {job.status !== 'Completed' &&
-          job.status !== 'Completed - Pending Approval' && (
-            <button onClick={handleCompletedClick}>Job Completed</button>
-          )}
-        {job.status === 'Completed' && (
-          <button onClick={() => onDismiss?.(job.id)}>Dismiss</button>
-        )}
+        {job.status === 'Completed' && <button onClick={() => onDismiss?.(job.id)}>Dismiss</button>}
       </td>
     </tr>
   );
 }
 
 export default JobRow;
+

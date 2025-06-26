@@ -1,7 +1,5 @@
-// Utility: fallback for API base URL
 const getBaseUrl = (base) => base || process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:5000';
 
-// Load jobs and users
 export async function loadData(API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
   try {
@@ -9,20 +7,14 @@ export async function loadData(API_BASE_URL) {
       fetch(`${base}/jobs`),
       fetch(`${base}/users`)
     ]);
-
     if (!jobsRes.ok || !usersRes.ok) throw new Error('Fetch failed');
-
-    return {
-      jobs: await jobsRes.json(),
-      users: await usersRes.json(),
-    };
+    return { jobs: await jobsRes.json(), users: await usersRes.json() };
   } catch (error) {
     console.error('Error loading data:', error);
     return { jobs: [], users: [] };
   }
 }
 
-// Update job status (for contractor or admin)
 export async function updateJobStatus(id, overrideStatus = null, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
   try {
@@ -30,27 +22,20 @@ export async function updateJobStatus(id, overrideStatus = null, API_BASE_URL) {
     if (!jobRes.ok) throw new Error('Job not found');
     const job = await jobRes.json();
 
-    const time = new Date().toISOString();
-    let status = job.status;
-    let contractorStatus = job.contractor_status;
+    const now = new Date().toISOString();
+    let status = job.status, contractorStatus = job.contractor_status;
 
     if (overrideStatus) {
-      switch (overrideStatus) {
-        case 'Approved': // Treat "Approved" as "Completed"
-        case 'Completed':
-          status = 'Completed';
-          contractorStatus = 'Completed';
-          break;
-        case 'Rejected':
-        case 'Pending':
-          status = 'Pending';
-          contractorStatus = 'Pending';
-          break;
-        default:
-          throw new Error('Invalid override status.');
+      if (['Approved', 'Completed'].includes(overrideStatus)) {
+        status = 'Completed';
+        contractorStatus = 'Completed';
+      } else if (['Pending', 'Rejected'].includes(overrideStatus)) {
+        status = 'Pending';
+        contractorStatus = 'Pending';
+      } else {
+        throw new Error('Invalid override status');
       }
     } else {
-      // Default contractor flow
       if (status === 'Pending') {
         status = 'In Progress';
         contractorStatus = 'In Progress';
@@ -58,33 +43,24 @@ export async function updateJobStatus(id, overrideStatus = null, API_BASE_URL) {
         status = 'Completed - Pending Approval';
         contractorStatus = 'Completed';
       } else {
-        throw new Error('Cannot change job status further.');
+        throw new Error('Cannot change job status further');
       }
     }
 
-    const updatedJob = {
-      ...job,
-      status,
-      contractor_status: contractorStatus,
-      status_timestamp: time,
-    };
-
-    const putRes = await fetch(`${base}/jobs/${id}`, {
+    const res = await fetch(`${base}/jobs/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedJob),
+      body: JSON.stringify({ ...job, status, contractor_status: contractorStatus, status_timestamp: now })
     });
 
-    if (!putRes.ok) throw new Error('Update failed');
-    return await putRes.json();
+    if (!res.ok) throw new Error('Update failed');
+    return await res.json();
   } catch (err) {
     console.error('Error updating job:', err);
     throw err;
   }
 }
 
-
-// Delete a job
 export async function deleteJob(id, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
   const res = await fetch(`${base}/jobs/${id}`, { method: 'DELETE' });
@@ -92,11 +68,9 @@ export async function deleteJob(id, API_BASE_URL) {
   return true;
 }
 
-// Move job to In Progress (contractor shortcut)
 export async function moveJobToInProgress(jobId, API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
-  const timestamp = new Date().toISOString();
-
+  const now = new Date().toISOString();
   try {
     const res = await fetch(`${base}/jobs/${jobId}`, {
       method: 'PATCH',
@@ -105,11 +79,10 @@ export async function moveJobToInProgress(jobId, API_BASE_URL) {
       body: JSON.stringify({
         status: 'In Progress',
         contractor_status: 'In Progress',
-        status_timestamp: timestamp,
-        onsite_time: timestamp,
-      }),
+        status_timestamp: now,
+        onsite_time: now
+      })
     });
-
     if (!res.ok) throw new Error(`Failed to move job to in progress: ${res.status}`);
     return await res.json();
   } catch (error) {

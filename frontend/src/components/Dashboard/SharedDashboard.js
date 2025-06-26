@@ -6,8 +6,6 @@ import UpdateJobModal from '../UpdateJobModal/UpdateJobModal';
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
   const [activeJobId, setActiveJobId] = useState(null);
-
-  // Load dismissed job IDs from localStorage on mount
   const [dismissedIds, setDismissedIds] = useState(() => {
     const stored = localStorage.getItem("dismissedJobs");
     return stored ? JSON.parse(stored) : [];
@@ -15,8 +13,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 
   useEffect(() => {
     fetchJobs(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchJobs]);
 
   const handleDismiss = (jobId) => {
     const updated = [...dismissedIds, jobId];
@@ -26,13 +23,10 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 
   const filteredJobs = Array.isArray(jobs)
     ? jobs.filter(job => {
-        const isAssigned =
-          role === 'contractor'
-            ? job.assigned_contractor === user?.id
-            : job.assigned_tech === user?.id;
-
-        const isDismissed = dismissedIds.includes(job.id);
-        return isAssigned && !isDismissed;
+        const isAssignedToUser =
+          job.assigned_contractor === user?.id ||
+          job.assigned_tech === user?.id;
+        return isAssignedToUser && !dismissedIds.includes(job.id);
       })
     : [];
 
@@ -67,7 +61,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
                   refreshJobs={() => fetchJobs(true)}
                   onComplete={onComplete}
                   onOpenModal={() => setActiveJobId(job.id)}
-                  onDismiss={() => handleDismiss(job.id)} // handles dismiss locally
+                  onDismiss={() => handleDismiss(job.id)}
                 />
               ))
             )}

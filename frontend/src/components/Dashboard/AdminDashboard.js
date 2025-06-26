@@ -41,7 +41,11 @@ const AdminDashboard = ({ onLogout }) => {
     localStorage.setItem("dismissedJobs", JSON.stringify(updated));
   };
 
-  const visibleJobs = jobs.filter((j) => !dismissedJobs.includes(j.id));
+  //  Show all jobs not dismissed — no filter by assignment
+  const visibleJobs = Array.isArray(jobs)
+    ? jobs.filter((j) => !dismissedJobs.includes(j.id))
+    : [];
+
   const activeJobs = visibleJobs.filter((j) => j.status !== "Completed");
   const completedJobs = visibleJobs.filter((j) => j.status === "Completed");
 
@@ -58,7 +62,7 @@ const AdminDashboard = ({ onLogout }) => {
 
       <JobTable
         jobs={activeJobs}
-        users={users} 
+        users={users}
         onReviewClick={setModalJob}
         onDismiss={handleDismiss}
       />
