@@ -9,15 +9,13 @@ function AdminReviewModal({ job, onClose, onApprove, onReject }) {
         <h3>Review Job: {job.work_order}</h3>
 
         <div className="modal-details">
-          <p><strong>Customer:</strong> {job.customer_name}</p>
-          <p><strong>Status:</strong> {job.status}</p>
-          <p><strong>Role:</strong> {job.role}</p>
-          <p><strong>Contractor:</strong> {job.contractor}</p>
-          <p><strong>Work Required:</strong> {job.work_required}</p>
+          <p><strong>Customer:</strong> {job.customer_name || "N/A"}</p>
+          <p><strong>Status:</strong> {job.status || "N/A"}</p>
+          <p><strong>Role:</strong> {job.role || "N/A"}</p>
+          <p><strong>Contractor:</strong> {job.contractor || "N/A"}</p>
+          <p><strong>Work Required:</strong> {job.work_required || "Not Provided"}</p>
 
-          {job.work_performed && (
-            <p><strong>Work Performed:</strong> {job.work_performed}</p>
-          )}
+          <p><strong>Work Performed:</strong> {job.work_performed || "Not Provided"}</p>
 
           {job.contractor_notes && (
             <p><strong>Contractor Notes:</strong> {job.contractor_notes}</p>
@@ -39,4 +37,3 @@ function AdminReviewModal({ job, onClose, onApprove, onReject }) {
 }
 
 export default AdminReviewModal;
-
