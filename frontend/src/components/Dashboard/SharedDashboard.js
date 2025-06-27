@@ -10,13 +10,32 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 
   useEffect(() => {
     fetchJobs(true);
-    const onStorage = (e) => ["jobUpdated", "jobReload"].includes(e.key) && fetchJobs(true);
+
+    const onStorage = (e) => {
+      if (["jobUpdated", "jobReload"].includes(e.key)) {
+        if (e.key === "jobReload") {
+          localStorage.removeItem("dismissedJobs");
+          setDismissedIds([]);
+        }
+        fetchJobs(true);
+      }
+    };
+
+    if (Array.isArray(jobs) && jobs.length) {
+      const maxId = Math.max(...jobs.map(j => j.id));
+      const stored = JSON.parse(localStorage.getItem("dismissedJobs") || "[]");
+      if (stored.length && maxId < Math.max(...stored)) {
+        localStorage.removeItem("dismissedJobs");
+        setDismissedIds([]);
+      }
+    }
+
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [fetchJobs]);
+  }, [jobs, fetchJobs]);
 
-  const handleDismiss = (jobId) => {
-    const updated = [...dismissedIds, jobId];
+  const handleDismiss = (id) => {
+    const updated = [...dismissedIds, id];
     setDismissedIds(updated);
     localStorage.setItem("dismissedJobs", JSON.stringify(updated));
   };
