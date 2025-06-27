@@ -8,8 +8,7 @@ job_routes = Blueprint("job_routes", __name__, url_prefix="/jobs")
 
 @job_routes.route("/", methods=["GET"], strict_slashes=False)
 def get_jobs():
-    jobs = Job.query.order_by(Job.created_at.desc()).all()
-    return jsonify([j.to_dict() for j in jobs]), 200
+    return jsonify([j.to_dict() for j in Job.query.order_by(Job.created_at.desc())]), 200
 
 @job_routes.route("/<int:job_id>", methods=["GET"], strict_slashes=False)
 def get_job(job_id):
@@ -28,20 +27,16 @@ def create_job():
         return jsonify({"error": f"No user with contractor name '{name}'"}), 404
 
     try:
-        # Auto-generate work_order (e.g., JM10001)
-        last_job = Job.query.order_by(Job.id.desc()).first()
-        next_number = 10001 if not last_job else int(last_job.work_order[2:]) + 1
-        new_work_order = f"JM{next_number:05d}"
-
+        last = Job.query.order_by(Job.id.desc()).first()
+        next_num = 10001 if not last else int(last.work_order[2:]) + 1
         machines = json.loads(d.get("machines", "[]")) if isinstance(d.get("machines"), str) else d.get("machines", [])
-
         new_job = Job(
-            work_order=new_work_order,
+            work_order=f"JM{next_num:05d}",
             customer_name=d.get("customer_name"),
             contractor=name,
             role=role,
             status=d.get("status", "Pending"),
-            required_date=datetime.strptime(d.get("required_date", ""), "%Y-%m-%d") if d.get("required_date") else None,
+            required_date=datetime.strptime(d["required_date"], "%Y-%m-%d") if d.get("required_date") else None,
             work_required=d.get("work_required"),
             customer_address=d.get("customer_address"),
             created_at=datetime.utcnow(),
@@ -49,11 +44,9 @@ def create_job():
             assigned_tech=user.id if role == "technician" else None,
             machines=Machine.query.filter(Machine.machine_id.in_(machines)).all()
         )
-
         db.session.add(new_job)
         db.session.commit()
         return jsonify(new_job.to_dict()), 201
-
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -68,41 +61,30 @@ def patch_job(job_id):
     now = datetime.utcnow()
 
     try:
-        for field in [
-            "customer_name", "contact_name", "travel_time",
-            "labour_hours", "work_performed", "status",
-            "contractor_status", "signature"
-        ]:
-            if field in d:
-                setattr(job, field, d[field])
+        for f in ["customer_name", "contact_name", "travel_time", "labour_hours", "work_performed", "status", "contractor_status", "signature"]:
+            if f in d: setattr(job, f, d[f])
 
         if "checklist" in d:
             for k, v in d["checklist"].items():
                 attr = f"checklist_{k}"
-                if hasattr(job, attr):
-                    setattr(job, attr, v)
+                if hasattr(job, attr): setattr(job, attr, v)
 
-        if "status" in d:
-            if d["status"] == "Approved" and getattr(current_user, "role", "") != "admin":
-                return jsonify({"error": "Only admin can approve"}), 403
-            if d["status"] == "Completed":
-                job.completion_date = now
+        if d.get("status") == "Approved" and getattr(current_user, "role", "") != "admin":
+            return jsonify({"error": "Only admin can approve"}), 403
+        if d.get("status") == "Completed":
+            job.completion_date = now
 
         if "onsite_time" in d:
-            try:
-                job.onsite_time = datetime.fromisoformat(d["onsite_time"])
-            except:
-                job.onsite_time = now
+            try: job.onsite_time = datetime.fromisoformat(d["onsite_time"])
+            except: job.onsite_time = now
 
         if "machines" in d:
-            machine_ids = json.loads(d["machines"]) if isinstance(d["machines"], str) else d["machines"]
-            job.machines = Machine.query.filter(Machine.machine_id.in_(machine_ids)).all()
+            ids = json.loads(d["machines"]) if isinstance(d["machines"], str) else d["machines"]
+            job.machines = Machine.query.filter(Machine.machine_id.in_(ids)).all()
 
         job.status_timestamp = now
-
         db.session.commit()
         return jsonify(job.to_dict()), 200
-
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
