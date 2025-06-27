@@ -15,7 +15,15 @@ const AdminDashboard = ({ onLogout }) => {
 
   useEffect(() => {
     restartPolling();
-    const onStorage = (e) => ["jobUpdated", "jobReload"].includes(e.key) && restartPolling();
+    const onStorage = (e) => {
+      if (["jobUpdated", "jobReload"].includes(e.key)) {
+        if (e.key === "jobReload") {
+          localStorage.removeItem("dismissedJobs");
+          setDismissedJobs([]);
+        }
+        restartPolling();
+      }
+    };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [restartPolling]);
@@ -31,15 +39,15 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  const handleDismiss = (jobId) => {
-    const updated = [...dismissedJobs, jobId];
+  const handleDismiss = (id) => {
+    const updated = [...dismissedJobs, id];
     setDismissedJobs(updated);
     localStorage.setItem("dismissedJobs", JSON.stringify(updated));
   };
 
-  const visibleJobs = Array.isArray(jobs) ? jobs.filter(j => !dismissedJobs.includes(j.id)) : [];
-  const activeJobs = visibleJobs.filter(j => j.status !== "Completed");
-  const completedJobs = visibleJobs.filter(j => j.status === "Completed");
+  const visible = Array.isArray(jobs) ? jobs.filter(j => !dismissedJobs.includes(j.id)) : [];
+  const activeJobs = visible.filter(j => j.status !== "Completed");
+  const completedJobs = visible.filter(j => j.status === "Completed");
 
   return (
     <section className="dashboard-container">
@@ -54,15 +62,7 @@ const AdminDashboard = ({ onLogout }) => {
 
       <JobTable jobs={activeJobs} users={users} onReviewClick={setModalJob} onDismiss={handleDismiss} />
 
-      {modalJob && (
-        <AdminReviewModal
-          job={modalJob}
-          onApprove={(id) => handleStatusUpdate(id, "Completed")}
-          onReject={(id) => handleStatusUpdate(id, "Pending")}
-          onClose={() => setModalJob(null)}
-        />
-      )}
-
+      {modalJob && <AdminReviewModal job={modalJob} onApprove={(id) => handleStatusUpdate(id, "Completed")} onReject={(id) => handleStatusUpdate(id, "Pending")} onClose={() => setModalJob(null)} />}
       {showCreateModal && <CreateJobModal isOpen onClose={() => setShowCreateModal(false)} onJobCreated={restartPolling} />}
       {showCompletedModal && <CompleteJobModal jobs={completedJobs} onDismiss={handleDismiss} onClose={() => setShowCompletedModal(false)} />}
     </section>
