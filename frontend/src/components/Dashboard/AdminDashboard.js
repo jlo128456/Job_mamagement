@@ -15,6 +15,7 @@ const AdminDashboard = ({ onLogout }) => {
 
   useEffect(() => {
     restartPolling();
+
     const onStorage = (e) => {
       if (["jobUpdated", "jobReload"].includes(e.key)) {
         if (e.key === "jobReload") {
@@ -24,13 +25,23 @@ const AdminDashboard = ({ onLogout }) => {
         restartPolling();
       }
     };
+
+    if (Array.isArray(jobs) && jobs.length) {
+      const maxId = Math.max(...jobs.map(j => j.id));
+      const stored = JSON.parse(localStorage.getItem("dismissedJobs") || "[]");
+      if (stored.length && maxId < Math.max(...stored)) {
+        localStorage.removeItem("dismissedJobs");
+        setDismissedJobs([]);
+      }
+    }
+
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [restartPolling]);
+  }, [jobs, restartPolling]);
 
-  const handleStatusUpdate = async (id, newStatus) => {
+  const handleStatusUpdate = async (id, status) => {
     try {
-      await updateJobStatus(id, newStatus);
+      await updateJobStatus(id, status);
       localStorage.setItem("jobUpdated", Date.now());
       restartPolling();
       setModalJob(null);
