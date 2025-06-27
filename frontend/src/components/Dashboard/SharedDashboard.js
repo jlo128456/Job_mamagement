@@ -30,6 +30,12 @@ function SharedDashboard({ role, onLogout, onComplete }) {
       })
     : [];
 
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
+    const numA = parseInt(a.work_order?.replace(/\D/g, '') || 0);
+    const numB = parseInt(b.work_order?.replace(/\D/g, '') || 0);
+    return numA - numB;
+  });
+
   return (
     <div className="dashboard-container">
       <h2>{role === 'contractor' ? 'Contractor' : 'Technician'} Dashboard</h2>
@@ -49,12 +55,12 @@ function SharedDashboard({ role, onLogout, onComplete }) {
             </tr>
           </thead>
           <tbody>
-            {filteredJobs.length === 0 ? (
+            {sortedJobs.length === 0 ? (
               <tr>
                 <td colSpan="7">No jobs found for this {role}.</td>
               </tr>
             ) : (
-              filteredJobs.map(job => (
+              sortedJobs.map(job => (
                 <JobRow
                   key={job.id}
                   job={job}
