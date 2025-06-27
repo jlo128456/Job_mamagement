@@ -6,11 +6,12 @@ import UpdateJobModal from '../UpdateJobModal/UpdateJobModal';
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
   const [activeJobId, setActiveJobId] = useState(null);
-  const [dismissedIds, setDismissedIds] = useState(() => JSON.parse(localStorage.getItem("dismissedJobs") || "[]"));
+  const [dismissedIds, setDismissedIds] = useState(() =>
+    JSON.parse(localStorage.getItem("dismissedJobs") || "[]")
+  );
 
   useEffect(() => {
     fetchJobs(true);
-
     const onStorage = (e) => {
       if (["jobUpdated", "jobReload"].includes(e.key)) {
         if (e.key === "jobReload") {
@@ -20,19 +21,20 @@ function SharedDashboard({ role, onLogout, onComplete }) {
         fetchJobs(true);
       }
     };
-
-    if (Array.isArray(jobs) && jobs.length) {
-      const maxId = Math.max(...jobs.map(j => j.id));
-      const stored = JSON.parse(localStorage.getItem("dismissedJobs") || "[]");
-      if (stored.length && maxId < Math.max(...stored)) {
-        localStorage.removeItem("dismissedJobs");
-        setDismissedIds([]);
-      }
-    }
-
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [jobs, fetchJobs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!Array.isArray(jobs) || !jobs.length) return;
+    const maxId = Math.max(...jobs.map(j => j.id));
+    const stored = JSON.parse(localStorage.getItem("dismissedJobs") || "[]");
+    if (stored.some(id => id > maxId)) {
+      localStorage.removeItem("dismissedJobs");
+      setDismissedIds([]);
+    }
+  }, [jobs]);
 
   const handleDismiss = (id) => {
     const updated = [...dismissedIds, id];
@@ -42,8 +44,14 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 
   const sortedJobs = Array.isArray(jobs)
     ? jobs
-        .filter(j => (j.assigned_contractor === user?.id || j.assigned_tech === user?.id) && !dismissedIds.includes(j.id))
-        .sort((a, b) => parseInt(a.work_order?.replace(/\D/g, '') || 0) - parseInt(b.work_order?.replace(/\D/g, '') || 0))
+        .filter(j =>
+          (j.assigned_contractor === user?.id || j.assigned_tech === user?.id) &&
+          !dismissedIds.includes(j.id)
+        )
+        .sort((a, b) =>
+          parseInt(a.work_order?.replace(/\D/g, '') || 0) -
+          parseInt(b.work_order?.replace(/\D/g, '') || 0)
+        )
     : [];
 
   return (
@@ -54,7 +62,8 @@ function SharedDashboard({ role, onLogout, onComplete }) {
         <table className="dashboard-table">
           <thead>
             <tr>
-              <th>Work Order</th><th>Customer</th><th>Required Date</th><th>Status</th><th>Onsite Time</th><th>Updated</th><th>Actions</th>
+              <th>Work Order</th><th>Customer</th><th>Required Date</th>
+              <th>Status</th><th>Onsite Time</th><th>Updated</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>

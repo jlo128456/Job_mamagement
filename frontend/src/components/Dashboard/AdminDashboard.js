@@ -11,11 +11,12 @@ const AdminDashboard = ({ onLogout }) => {
   const [modalJob, setModalJob] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCompletedModal, setShowCompletedModal] = useState(false);
-  const [dismissedJobs, setDismissedJobs] = useState(() => JSON.parse(localStorage.getItem("dismissedJobs") || "[]"));
+  const [dismissedJobs, setDismissedJobs] = useState(() =>
+    JSON.parse(localStorage.getItem("dismissedJobs") || "[]")
+  );
 
   useEffect(() => {
     restartPolling();
-
     const onStorage = (e) => {
       if (["jobUpdated", "jobReload"].includes(e.key)) {
         if (e.key === "jobReload") {
@@ -25,19 +26,19 @@ const AdminDashboard = ({ onLogout }) => {
         restartPolling();
       }
     };
-
-    if (Array.isArray(jobs) && jobs.length) {
-      const maxId = Math.max(...jobs.map(j => j.id));
-      const stored = JSON.parse(localStorage.getItem("dismissedJobs") || "[]");
-      if (stored.length && maxId < Math.max(...stored)) {
-        localStorage.removeItem("dismissedJobs");
-        setDismissedJobs([]);
-      }
-    }
-
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [jobs, restartPolling]);
+  }, [restartPolling]);
+
+  useEffect(() => {
+    if (!Array.isArray(jobs) || !jobs.length) return;
+    const maxId = Math.max(...jobs.map(j => j.id));
+    const stored = JSON.parse(localStorage.getItem("dismissedJobs") || "[]");
+    if (stored.some(id => id > maxId)) {
+      localStorage.removeItem("dismissedJobs");
+      setDismissedJobs([]);
+    }
+  }, [jobs]);
 
   const handleStatusUpdate = async (id, status) => {
     try {
@@ -45,9 +46,7 @@ const AdminDashboard = ({ onLogout }) => {
       localStorage.setItem("jobUpdated", Date.now());
       restartPolling();
       setModalJob(null);
-    } catch (err) {
-      console.error("Status update failed:", err);
-    }
+    } catch {}
   };
 
   const handleDismiss = (id) => {
@@ -57,8 +56,8 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   const visible = Array.isArray(jobs) ? jobs.filter(j => !dismissedJobs.includes(j.id)) : [];
-  const activeJobs = visible.filter(j => j.status !== "Completed");
-  const completedJobs = visible.filter(j => j.status === "Completed");
+  const active = visible.filter(j => j.status !== "Completed");
+  const completed = visible.filter(j => j.status === "Completed");
 
   return (
     <section className="dashboard-container">
@@ -70,12 +69,21 @@ const AdminDashboard = ({ onLogout }) => {
           <button className="logout-btn" onClick={onLogout}>Logout</button>
         </div>
       </div>
-
-      <JobTable jobs={activeJobs} users={users} onReviewClick={setModalJob} onDismiss={handleDismiss} />
-
-      {modalJob && <AdminReviewModal job={modalJob} onApprove={(id) => handleStatusUpdate(id, "Completed")} onReject={(id) => handleStatusUpdate(id, "Pending")} onClose={() => setModalJob(null)} />}
-      {showCreateModal && <CreateJobModal isOpen onClose={() => setShowCreateModal(false)} onJobCreated={restartPolling} />}
-      {showCompletedModal && <CompleteJobModal jobs={completedJobs} onDismiss={handleDismiss} onClose={() => setShowCompletedModal(false)} />}
+      <JobTable jobs={active} users={users} onReviewClick={setModalJob} onDismiss={handleDismiss} />
+      {modalJob && (
+        <AdminReviewModal
+          job={modalJob}
+          onApprove={(id) => handleStatusUpdate(id, "Completed")}
+          onReject={(id) => handleStatusUpdate(id, "Pending")}
+          onClose={() => setModalJob(null)}
+        />
+      )}
+      {showCreateModal && (
+        <CreateJobModal isOpen onClose={() => setShowCreateModal(false)} onJobCreated={restartPolling} />
+      )}
+      {showCompletedModal && (
+        <CompleteJobModal jobs={completed} onDismiss={handleDismiss} onClose={() => setShowCompletedModal(false)} />
+      )}
     </section>
   );
 };
