@@ -1,65 +1,74 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../../context/AppContext';
-import JobRow from '../Dashboard/JobRow';
-import UpdateJobModal from '../UpdateJobModal/UpdateJobModal';
+import React, { useContext, useState, useEffect } from "react";
+import { AppContext } from "../../context/AppContext";
+import JobRow from "../Dashboard/JobRow";
+import UpdateJobModal from "../UpdateJobModal/UpdateJobModal";
 
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
-  const [activeId, setActiveId] = useState(null);
+  const [activeJobId, setActiveJobId] = useState(null);
   const [dismissed, setDismissed] = useState([]);
 
   useEffect(() => {
     fetchJobs(true);
-  }, [fetchJobs]);
 
-  useEffect(() => {
     const onStorage = (e) => {
-      if (['jobUpdated', 'jobReload'].includes(e.key)) fetchJobs(true);
+      if (["jobUpdated", "jobReload"].includes(e.key)) {
+        fetchJobs(true);
+      }
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, [fetchJobs]);
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
 
-  const handleDismiss = (id) => setDismissed((prev) => [...prev, id]);
+    // fetchJobs is stable in context, otherwise disable eslint
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const filtered = Array.isArray(jobs)
+  const handleDismiss = (id) => {
+    setDismissed((prev) => [...prev, id]);
+  };
+
+  const filteredJobs = Array.isArray(jobs)
     ? jobs
         .filter(
           (j) =>
-            (j.assigned_contractor === user?.id ||
-              j.assigned_tech === user?.id) &&
+            (j.assigned_contractor === user?.id || j.assigned_tech === user?.id) &&
             !dismissed.includes(j.id)
         )
         .sort(
           (a, b) =>
-            parseInt(a.work_order?.replace(/\D/g, '') || 0, 10) -
-            parseInt(b.work_order?.replace(/\D/g, '') || 0, 10)
+            parseInt(a.work_order?.replace(/\D/g, ""), 10) -
+            parseInt(b.work_order?.replace(/\D/g, ""), 10)
         )
     : [];
 
   return (
     <div className="dashboard-container">
-      <h2>{role === 'contractor' ? 'Contractor' : 'Technician'} Dashboard</h2>
+      <h2>{role === "contractor" ? "Contractor" : "Technician"} Dashboard</h2>
       <button className="logout-btn" onClick={onLogout}>Logout</button>
       <div className="table-wrapper">
         <table className="dashboard-table">
           <thead>
             <tr>
-              <th>Work Order</th><th>Customer</th><th>Required Date</th>
-              <th>Status</th><th>Onsite Time</th><th>Updated</th><th>Actions</th>
+              <th>Work Order</th>
+              <th>Customer</th>
+              <th>Required Date</th>
+              <th>Status</th>
+              <th>Onsite Time</th>
+              <th>Updated</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {filteredJobs.length === 0 ? (
               <tr><td colSpan="7">No jobs found for this {role}.</td></tr>
             ) : (
-              filtered.map((job) => (
+              filteredJobs.map((job) => (
                 <JobRow
                   key={job.id}
                   job={job}
                   refreshJobs={() => fetchJobs(true)}
                   onComplete={onComplete}
-                  onOpenModal={() => setActiveId(job.id)}
+                  onOpenModal={() => setActiveJobId(job.id)}
                   onDismiss={() => handleDismiss(job.id)}
                 />
               ))
@@ -67,10 +76,14 @@ function SharedDashboard({ role, onLogout, onComplete }) {
           </tbody>
         </table>
       </div>
-      {activeId && (
+
+      {activeJobId && (
         <UpdateJobModal
-          jobId={activeId}
-          onClose={() => setActiveId(null)}
+          jobId={activeJobId}
+          onClose={() => {
+            setActiveJobId(null);
+            fetchJobs(true);
+          }}
         />
       )}
     </div>
