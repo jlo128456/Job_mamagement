@@ -28,9 +28,15 @@ def create_job():
         return jsonify({"error": f"No user with contractor name '{name}'"}), 404
 
     try:
+        # Auto-generate work_order (e.g., JM10001)
+        last_job = Job.query.order_by(Job.id.desc()).first()
+        next_number = 10001 if not last_job else int(last_job.work_order[2:]) + 1
+        new_work_order = f"JM{next_number:05d}"
+
         machines = json.loads(d.get("machines", "[]")) if isinstance(d.get("machines"), str) else d.get("machines", [])
+
         new_job = Job(
-            work_order=d.get("work_order"),
+            work_order=new_work_order,
             customer_name=d.get("customer_name"),
             contractor=name,
             role=role,
@@ -43,9 +49,11 @@ def create_job():
             assigned_tech=user.id if role == "technician" else None,
             machines=Machine.query.filter(Machine.machine_id.in_(machines)).all()
         )
+
         db.session.add(new_job)
         db.session.commit()
         return jsonify(new_job.to_dict()), 201
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -60,7 +68,6 @@ def patch_job(job_id):
     now = datetime.utcnow()
 
     try:
-        # Update standard editable fields
         for field in [
             "customer_name", "contact_name", "travel_time",
             "labour_hours", "work_performed", "status",
@@ -69,34 +76,28 @@ def patch_job(job_id):
             if field in d:
                 setattr(job, field, d[field])
 
-        # Checklist fields
         if "checklist" in d:
             for k, v in d["checklist"].items():
                 attr = f"checklist_{k}"
                 if hasattr(job, attr):
                     setattr(job, attr, v)
 
-        # Handle status role validation and completion timestamp
         if "status" in d:
             if d["status"] == "Approved" and getattr(current_user, "role", "") != "admin":
                 return jsonify({"error": "Only admin can approve"}), 403
-
             if d["status"] == "Completed":
                 job.completion_date = now
 
-        # Onsite time update
         if "onsite_time" in d:
             try:
                 job.onsite_time = datetime.fromisoformat(d["onsite_time"])
             except:
                 job.onsite_time = now
 
-        # Machines
         if "machines" in d:
             machine_ids = json.loads(d["machines"]) if isinstance(d["machines"], str) else d["machines"]
             job.machines = Machine.query.filter(Machine.machine_id.in_(machine_ids)).all()
 
-        # Always update status_timestamp for any change
         job.status_timestamp = now
 
         db.session.commit()
