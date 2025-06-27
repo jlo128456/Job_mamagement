@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext';
-import JobRow from './JobRow';
+import JobRow from '../Dashboard/JobRow';
 import UpdateJobModal from '../UpdateJobModal/UpdateJobModal';
 
 function SharedDashboard({ role, onLogout, onComplete }) {
@@ -10,23 +10,35 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 
   useEffect(() => {
     fetchJobs(true);
-    const onStorage = (e) => {
-      if (["jobUpdated", "jobReload"].includes(e.key)) fetchJobs(true);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
   }, [fetchJobs]);
 
-  const handleDismiss = (id) => setDismissed([...dismissed, id]);
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (['jobUpdated', 'jobReload'].includes(e.key)) fetchJobs(true);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [fetchJobs]);
+
+  useEffect(() => {
+    if (activeId === null) fetchJobs(true);
+  }, [activeId, fetchJobs]);
+
+  const handleDismiss = (id) => setDismissed((prev) => [...prev, id]);
 
   const filtered = Array.isArray(jobs)
     ? jobs
-        .filter(j =>
-          (j.assigned_contractor === user?.id || j.assigned_tech === user?.id) &&
-          !dismissed.includes(j.id))
-        .sort((a, b) =>
-          parseInt(a.work_order?.replace(/\D/g, '')) -
-          parseInt(b.work_order?.replace(/\D/g, '')))
+        .filter(
+          (j) =>
+            (j.assigned_contractor === user?.id ||
+              j.assigned_tech === user?.id) &&
+            !dismissed.includes(j.id)
+        )
+        .sort(
+          (a, b) =>
+            parseInt(a.work_order?.replace(/\D/g, '') || 0, 10) -
+            parseInt(b.work_order?.replace(/\D/g, '') || 0, 10)
+        )
     : [];
 
   return (
@@ -37,14 +49,15 @@ function SharedDashboard({ role, onLogout, onComplete }) {
         <table className="dashboard-table">
           <thead>
             <tr>
-              <th>Work Order</th><th>Customer</th><th>Required Date</th><th>Status</th><th>Onsite Time</th><th>Updated</th><th>Actions</th>
+              <th>Work Order</th><th>Customer</th><th>Required Date</th>
+              <th>Status</th><th>Onsite Time</th><th>Updated</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr><td colSpan="7">No jobs found for this {role}.</td></tr>
             ) : (
-              filtered.map(job => (
+              filtered.map((job) => (
                 <JobRow
                   key={job.id}
                   job={job}
@@ -61,10 +74,7 @@ function SharedDashboard({ role, onLogout, onComplete }) {
       {activeId && (
         <UpdateJobModal
           jobId={activeId}
-          onClose={() => {
-            setActiveId(null);
-            fetchJobs(true);
-          }}
+          onClose={() => setActiveId(null)}
         />
       )}
     </div>
