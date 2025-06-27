@@ -20,10 +20,6 @@ function SharedDashboard({ role, onLogout, onComplete }) {
     return () => window.removeEventListener('storage', onStorage);
   }, [fetchJobs]);
 
-  useEffect(() => {
-    if (activeId === null) fetchJobs(true);
-  }, [activeId, fetchJobs]);
-
   const handleDismiss = (id) => setDismissed((prev) => [...prev, id]);
 
   const filtered = Array.isArray(jobs)
