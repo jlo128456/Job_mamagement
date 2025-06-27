@@ -11,15 +11,11 @@ const AdminDashboard = ({ onLogout }) => {
   const [modalJob, setModalJob] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCompletedModal, setShowCompletedModal] = useState(false);
-
-  const [dismissedJobs, setDismissedJobs] = useState(() => {
-    const stored = localStorage.getItem("dismissedJobs");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [dismissedJobs, setDismissedJobs] = useState(() => JSON.parse(localStorage.getItem("dismissedJobs") || "[]"));
 
   useEffect(() => {
     restartPolling();
-    const onStorage = (e) => e.key === "jobUpdated" && restartPolling();
+    const onStorage = (e) => ["jobUpdated", "jobReload"].includes(e.key) && restartPolling();
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [restartPolling]);
@@ -41,13 +37,9 @@ const AdminDashboard = ({ onLogout }) => {
     localStorage.setItem("dismissedJobs", JSON.stringify(updated));
   };
 
-  //  Show all jobs not dismissed — no filter by assignment
-  const visibleJobs = Array.isArray(jobs)
-    ? jobs.filter((j) => !dismissedJobs.includes(j.id))
-    : [];
-
-  const activeJobs = visibleJobs.filter((j) => j.status !== "Completed");
-  const completedJobs = visibleJobs.filter((j) => j.status === "Completed");
+  const visibleJobs = Array.isArray(jobs) ? jobs.filter(j => !dismissedJobs.includes(j.id)) : [];
+  const activeJobs = visibleJobs.filter(j => j.status !== "Completed");
+  const completedJobs = visibleJobs.filter(j => j.status === "Completed");
 
   return (
     <section className="dashboard-container">
@@ -60,12 +52,7 @@ const AdminDashboard = ({ onLogout }) => {
         </div>
       </div>
 
-      <JobTable
-        jobs={activeJobs}
-        users={users}
-        onReviewClick={setModalJob}
-        onDismiss={handleDismiss}
-      />
+      <JobTable jobs={activeJobs} users={users} onReviewClick={setModalJob} onDismiss={handleDismiss} />
 
       {modalJob && (
         <AdminReviewModal
@@ -76,21 +63,8 @@ const AdminDashboard = ({ onLogout }) => {
         />
       )}
 
-      {showCreateModal && (
-        <CreateJobModal
-          isOpen
-          onClose={() => setShowCreateModal(false)}
-          onJobCreated={restartPolling}
-        />
-      )}
-
-      {showCompletedModal && (
-        <CompleteJobModal
-          jobs={completedJobs}
-          onDismiss={handleDismiss}
-          onClose={() => setShowCompletedModal(false)}
-        />
-      )}
+      {showCreateModal && <CreateJobModal isOpen onClose={() => setShowCreateModal(false)} onJobCreated={restartPolling} />}
+      {showCompletedModal && <CompleteJobModal jobs={completedJobs} onDismiss={handleDismiss} onClose={() => setShowCompletedModal(false)} />}
     </section>
   );
 };
