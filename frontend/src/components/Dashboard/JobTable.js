@@ -3,6 +3,12 @@ import { formatForDisplayLocal } from "../../utils/timeUtils";
 import { getStatusClass } from "../../utils/statusUtils";
 
 function JobTable({ jobs, onReviewClick, onDismiss }) {
+  const sortedJobs = [...jobs].sort((a, b) => {
+    const numA = parseInt(a.work_order?.replace(/\D/g, "") || 0);
+    const numB = parseInt(b.work_order?.replace(/\D/g, "") || 0);
+    return numA - numB;
+  });
+
   return (
     <div className="table-wrapper">
       <table className="dashboard-table">
@@ -19,12 +25,12 @@ function JobTable({ jobs, onReviewClick, onDismiss }) {
           </tr>
         </thead>
         <tbody>
-          {jobs.length === 0 ? (
+          {sortedJobs.length === 0 ? (
             <tr>
               <td colSpan="8">No jobs to display.</td>
             </tr>
           ) : (
-            jobs.map((job) => {
+            sortedJobs.map((job) => {
               const requiredDate = job.required_date
                 ? formatForDisplayLocal(job.required_date)
                 : "N/A";
@@ -53,7 +59,7 @@ function JobTable({ jobs, onReviewClick, onDismiss }) {
                       ? `${job.contractor}`
                       : job.technician
                       ? `${job.technician}`
-                      : 'Unassigned'}
+                      : "Unassigned"}
                   </td>
                   <td>
                     {status === "Completed - Pending Approval" ? (
