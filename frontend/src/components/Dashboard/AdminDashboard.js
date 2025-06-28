@@ -15,27 +15,19 @@ function AdminDashboard({ onLogout }) {
   const [activeJobs, setActiveJobs] = useState([]);
 
   useEffect(() => {
-    // Filter and sort jobs only when jobs change
-    const processJobs = () => {
-      const visible = Array.isArray(jobs)
-        ? jobs.filter((j) => !dismissedIds.includes(j.id))
-        : [];
-
-      const sorted = [...visible].sort((a, b) => {
-        const aNum = parseInt(a.work_order.replace(/\D/g, ''), 10);
-        const bNum = parseInt(b.work_order.replace(/\D/g, ''), 10);
-        return aNum - bNum;
-      });
-
-      setActiveJobs(sorted.filter((j) => j.status !== 'Completed'));
-    };
-
-    processJobs();
+    const visible = Array.isArray(jobs)
+      ? jobs.filter(j => !dismissedIds.includes(j.id))
+      : [];
+    const sorted = [...visible].sort((a, b) =>
+      parseInt(a.work_order.replace(/\D/g, '')) -
+      parseInt(b.work_order.replace(/\D/g, ''))
+    );
+    setActiveJobs(sorted.filter(j => j.status !== 'Completed'));
   }, [jobs, dismissedIds]);
 
   useEffect(() => {
     restartPolling();
-    const onStorage = (e) => {
+    const onStorage = e => {
       if (['jobUpdated', 'jobReload'].includes(e.key)) restartPolling();
     };
     window.addEventListener('storage', onStorage);
@@ -53,11 +45,10 @@ function AdminDashboard({ onLogout }) {
     }
   };
 
-  const handleDismiss = (id) =>
-    setDismissedIds((prev) => [...prev, id]);
+  const handleDismiss = id => setDismissedIds(p => [...p, id]);
 
   const completed = Array.isArray(jobs)
-    ? jobs.filter((j) => j.status === 'Completed' && !dismissedIds.includes(j.id))
+    ? jobs.filter(j => j.status === 'Completed' && !dismissedIds.includes(j.id))
     : [];
 
   return (
@@ -71,24 +62,25 @@ function AdminDashboard({ onLogout }) {
         </div>
       </div>
 
-      {/* Table now updates reactively, not full refresh */}
-      <JobTable
-        jobs={activeJobs}
-        users={users}
-        onReviewClick={setModalJob}
-        onDismiss={handleDismiss}
-      />
+      <JobTable jobs={activeJobs} users={users} onReviewClick={setModalJob} onDismiss={handleDismiss} />
 
       {modalJob && (
         <AdminReviewModal
           job={modalJob}
           onClose={() => setModalJob(null)}
-          onApprove={(id) => handleStatusUpdate(id, 'Approved')}
-          onReject={(id) => handleStatusUpdate(id, 'In Progress')}
+          onApprove={id => handleStatusUpdate(id, 'Approved')}
+          onReject={id => handleStatusUpdate(id, 'In Progress')}
         />
       )}
       {showCreateModal && (
-        <CreateJobModal isOpen onClose={() => setShowCreateModal(false)} />
+        <CreateJobModal
+          isOpen
+          onClose={() => setShowCreateModal(false)}
+          onJobCreated={() => {
+            setDismissedIds([]);
+            restartPolling();
+          }}
+        />
       )}
       {showCompletedModal && (
         <CompleteJobModal

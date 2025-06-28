@@ -13,32 +13,32 @@ function CreateJobModal({ isOpen, onClose, onJobCreated }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    const fetchData = async () => {
-      const [uRes, mRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/users/staff`),
-        fetch(`${API_BASE_URL}/machines`)
-      ]);
-      if (uRes.ok) setUsers(await uRes.json());
-      if (mRes.ok) setMachines(await mRes.json());
-    };
-    fetchData();
-  }, [isOpen, API_BASE_URL]);
+    Promise.all([
+      fetch(`${API_BASE_URL}/users/staff`).then(res => res.ok && res.json()),
+      fetch(`${API_BASE_URL}/machines`).then(res => res.ok && res.json())
+    ])
+      .then(([u, m]) => {
+        if (u) setUsers(u);
+        if (m) setMachines(m);
+      })
+      .catch(console.error);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
-    const prefix = "JM";
-    const last = jobs.map(j => j.work_order)
-      .filter(id => id?.startsWith(prefix))
-      .map(id => parseInt(id.replace(prefix, "")))
+    const last = jobs
+      .map(j => j.work_order)
+      .filter(id => id?.startsWith("JM"))
+      .map(id => parseInt(id.replace("JM", "")))
       .filter(n => !isNaN(n))
       .sort((a, b) => b - a)[0] || 10000;
-    setFormData(f => ({ ...f, work_order: `${prefix}${last + 1}` }));
+    setFormData(f => ({ ...f, work_order: `JM${last + 1}` }));
   }, [isOpen, jobs]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectedOptions } = e.target;
     if (name === "machines") {
-      const selected = Array.from(e.target.selectedOptions, o => o.value);
+      const selected = Array.from(selectedOptions, o => o.value);
       setFormData(f => ({ ...f, machines: selected }));
     } else {
       setFormData(f => ({ ...f, [name]: value }));
@@ -49,15 +49,10 @@ function CreateJobModal({ isOpen, onClose, onJobCreated }) {
     e.preventDefault();
     const user = users.find(u => u.id === parseInt(formData.assigned_user_id));
     const payload = {
-      work_order: formData.work_order,
-      customer_name: formData.customer_name.trim(),
-      customer_address: formData.customer_address.trim(),
-      work_required: formData.work_required.trim(),
+      ...formData,
       contractor: user?.contractor || "",
       role: user?.role || "",
       status: "Pending",
-      machines: formData.machines,
-      required_date: formData.required_date,
       timezone,
       assigned_contractor: user?.role === "contractor" ? user.id : null,
       assigned_tech: user?.role === "technician" ? user.id : null
@@ -73,7 +68,7 @@ function CreateJobModal({ isOpen, onClose, onJobCreated }) {
       const newJob = await res.json();
       setJobs(p => [...p, newJob]);
       localStorage.setItem("jobUpdated", Date.now());
-      onJobCreated?.();
+      onJobCreated?.(); // notify parent to refresh/reset filters
       onClose();
       setFormData({ work_order: "", customer_name: "", customer_address: "", assigned_user_id: "", required_date: "", work_required: "", machines: [] });
     } catch {
