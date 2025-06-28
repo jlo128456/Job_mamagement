@@ -49,3 +49,35 @@ button:hover:not(#loginForm button) {
   margin-top: 10px;
   display: block;
 }
+
+
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.dashboard-table {
+  min-width: 900px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .action-buttons button {
+    min-width: unset;
+    width: 100%;
+  }
+}
