@@ -12,6 +12,26 @@ function AdminDashboard({ onLogout }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCompletedModal, setShowCompletedModal] = useState(false);
   const [dismissedIds, setDismissedIds] = useState([]);
+  const [activeJobs, setActiveJobs] = useState([]);
+
+  useEffect(() => {
+    // Filter and sort jobs only when jobs change
+    const processJobs = () => {
+      const visible = Array.isArray(jobs)
+        ? jobs.filter((j) => !dismissedIds.includes(j.id))
+        : [];
+
+      const sorted = [...visible].sort((a, b) => {
+        const aNum = parseInt(a.work_order.replace(/\D/g, ''), 10);
+        const bNum = parseInt(b.work_order.replace(/\D/g, ''), 10);
+        return aNum - bNum;
+      });
+
+      setActiveJobs(sorted.filter((j) => j.status !== 'Completed'));
+    };
+
+    processJobs();
+  }, [jobs, dismissedIds]);
 
   useEffect(() => {
     restartPolling();
@@ -33,20 +53,12 @@ function AdminDashboard({ onLogout }) {
     }
   };
 
-  const handleDismiss = (id) => setDismissedIds((prev) => [...prev, id]);
+  const handleDismiss = (id) =>
+    setDismissedIds((prev) => [...prev, id]);
 
-  const visible = Array.isArray(jobs)
-    ? jobs.filter((j) => !dismissedIds.includes(j.id))
+  const completed = Array.isArray(jobs)
+    ? jobs.filter((j) => j.status === 'Completed' && !dismissedIds.includes(j.id))
     : [];
-
-  const sortedJobs = [...visible].sort((a, b) => {
-    const aNum = parseInt(a.work_order.replace(/\D/g, ''), 10);
-    const bNum = parseInt(b.work_order.replace(/\D/g, ''), 10);
-    return aNum - bNum;
-  });
-
-  const active = sortedJobs.filter((j) => j.status !== 'Completed');
-  const completed = sortedJobs.filter((j) => j.status === 'Completed');
 
   return (
     <section className="dashboard-container">
@@ -59,8 +71,9 @@ function AdminDashboard({ onLogout }) {
         </div>
       </div>
 
+      {/* Table now updates reactively, not full refresh */}
       <JobTable
-        jobs={active}
+        jobs={activeJobs}
         users={users}
         onReviewClick={setModalJob}
         onDismiss={handleDismiss}

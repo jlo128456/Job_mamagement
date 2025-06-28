@@ -31,8 +31,9 @@ function JobTable({ jobs, onReviewClick, onDismiss }) {
             </tr>
           ) : (
             sortedJobs.map((job) => {
+              //  Format just the date for Required Date
               const requiredDate = job.required_date
-                ? formatForDisplayLocal(job.required_date)
+                ? new Date(job.required_date).toLocaleDateString()
                 : "N/A";
 
               const onsiteTime = job.onsite_time
