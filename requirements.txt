@@ -1,6 +1,6 @@
 -i https://pypi.org/simple
 alembic==1.14.1; python_version >= '3.8'
-backports.zoneinfo==0.2.1; python_version >= '3.6'
+backports.zoneinfo==0.2.1; python_version < '3.9'
 blinker==1.8.2; python_version >= '3.8'
 click==8.1.8; python_version >= '3.7'
 flask==3.0.3; python_version >= '3.8'
