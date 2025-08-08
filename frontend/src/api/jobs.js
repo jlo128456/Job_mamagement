@@ -1,9 +1,9 @@
-const getBaseUrl = (base) => {
-  if (base) return base;
-  if (process.env.REACT_APP_API_BASE_URL) return process.env.REACT_APP_API_BASE_URL;
-  if (window.location.hostname.includes("onrender.com")) return "https://job-mamagement.onrender.com";
-  return "http://127.0.0.1:5000";
-};
+const getBaseUrl = (base) =>
+  base ||
+  process.env.REACT_APP_API_BASE_URL ||
+  (window.location.hostname.includes("onrender.com")
+    ? "https://job-mamagement.onrender.com"
+    : "http://127.0.0.1:5000");
 
 export async function loadData(API_BASE_URL) {
   const base = getBaseUrl(API_BASE_URL);
