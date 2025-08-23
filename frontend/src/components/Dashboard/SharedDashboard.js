@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from "../../context/AppContext";
 import JobRow from "../Dashboard/JobRow";
 import UpdateJobModal from "../UpdateJobModal/UpdateJobModal";
+import { socket } from "../../socket-client";
 
 function SharedDashboard({ role, onLogout, onComplete }) {
   const { user, jobs, fetchJobs } = useContext(AppContext);
@@ -10,30 +11,28 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 
   useEffect(() => {
     fetchJobs(true);
-    const onStorage = (e) => {
-      if (["jobUpdated", "jobReload"].includes(e.key)) fetchJobs(true);
+    const onChange = () => fetchJobs(true);
+    socket.on("job:updated", onChange);
+    socket.on("job:list:changed", onChange);
+    return () => {
+      socket.off("job:updated", onChange);
+      socket.off("job:list:changed", onChange);
     };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
   }, [fetchJobs]);
 
-  const handleDismiss = (jobId) => {
-    setDismissedIds((prev) => [...prev, jobId]);
-  };
+  const handleDismiss = (id) => setDismissedIds((p) => [...p, id]);
 
-  const filteredJobs = Array.isArray(jobs)
-    ? jobs
-        .filter(
-          (j) =>
-            (j.assigned_contractor === user?.id || j.assigned_tech === user?.id) &&
-            !dismissedIds.includes(j.id)
-        )
-        .sort(
-          (a, b) =>
-            parseInt(a.work_order?.replace(/\D/g, ""), 10) -
-            parseInt(b.work_order?.replace(/\D/g, ""), 10)
-        )
-    : [];
+  const filteredJobs = (Array.isArray(jobs) ? jobs : [])
+    .filter(
+      (j) =>
+        (j.assigned_contractor === user?.id || j.assigned_tech === user?.id) &&
+        !dismissedIds.includes(j.id)
+    )
+    .sort(
+      (a, b) =>
+        parseInt(a.work_order?.replace(/\D/g, ""), 10) -
+        parseInt(b.work_order?.replace(/\D/g, ""), 10)
+    );
 
   return (
     <div className="dashboard-container">
@@ -43,13 +42,9 @@ function SharedDashboard({ role, onLogout, onComplete }) {
         <table className="dashboard-table">
           <thead>
             <tr>
-              <th>Work Order</th>
-              <th>Customer</th>
-              <th>Required Date</th>
-              <th>Status</th>
-              <th>Onsite Time</th>
-              <th>Updated</th>
-              <th>Actions</th>
+              {["Work Order","Customer","Required Date","Status","Onsite Time","Updated","Actions"].map((h) => (
+                <th key={h}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>

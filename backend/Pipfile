@@ -11,6 +11,9 @@ python-dotenv = "*"
 flask-cors = "*"
 "backports.zoneinfo" = "*"
 flask-login = "*"
+flask-socketio = "*"
+python-socketio = {extras = ["client"], version = "*"}
+eventlet = "*"
 
 [dev-packages]
 
