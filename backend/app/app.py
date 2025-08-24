@@ -1,8 +1,9 @@
 from flask import Flask, request
 from flask_migrate import Migrate
 from flask_cors import CORS
-from models.models import db
+from models import db
 import os, sys, logging
+from routes.metrics_routes import metrics_routes
 from flask_socketio import SocketIO, emit, join_room
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout,
@@ -65,11 +66,17 @@ def emit_job_events(p: dict):
     socketio.emit("job:list:changed", {"id": jid})
 
 app.emit_job_events = emit_job_events
+#emit data change to graph
+def emit_metric_update(payload: dict):
+    socketio.emit("metrics:hours:changed", payload)
+app.emit_metric_update = emit_metric_update
+
 
 from routes.job_routes import job_routes
 from routes.user_routes import user_routes
 from routes.machine_routes import machine_routes
 app.register_blueprint(job_routes); app.register_blueprint(user_routes); app.register_blueprint(machine_routes)
+app.register_blueprint(metrics_routes)
 
 @app.get("/health")
 def health():

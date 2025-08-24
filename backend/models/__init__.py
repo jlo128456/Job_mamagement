@@ -1,3 +1,10 @@
-from .models import db, User, Job, Machine
+# models/__init__.py
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
 
-__all__ = ['db', 'User', 'Job', 'Machine']
+# import models so they register with SQLAlchemy metadata
+from .associations import job_machines  
+from .user import User                  
+from .machine import Machine            
+from .job import Job                    
+from .hours_metric import HoursMetric   

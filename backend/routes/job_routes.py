@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import current_user
-from models.models import db, Job, User, Machine
+from models import User, Job, Machine, HoursMetric
 from datetime import datetime, timezone
 import json
 
