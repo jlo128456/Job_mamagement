@@ -1,101 +1,22 @@
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem 1rem;
-  overflow-y: auto;
-  z-index: 9999;
-}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;padding:2rem 1rem;overflow-y:auto;z-index:9999;}
+.modal-overlay.overlay-opaque{background:#000!important;}
 
-.modal-box,
-#createJobModal,
-#updateJobContainer {
-  background: #fff;
-  border-radius: 10px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 500px;
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-  position: relative;
-  box-sizing: border-box;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  text-align: left;
-  margin: auto; /* Optional safeguard for fallback centering */
-}
+.modal-box,#createJobModal,#updateJobContainer{background:#fff;border-radius:10px;padding:2rem;width:100%;max-width:500px;max-height:calc(100vh - 2rem);overflow-y:auto;position:relative;box-sizing:border-box;box-shadow:0 10px 25px rgba(0,0,0,.3);text-align:left;margin:auto;}
+.modal-box h3{font-size:1.4rem;margin-bottom:1rem;font-weight:600;color:#222;}
 
-.modal-box h3 {
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  color: #222;
-}
+.modal-box input,.modal-box textarea,.modal-box select{width:100%;padding:.6rem .75rem;margin-bottom:1rem;font-size:1rem;border:1px solid #ccc;border-radius:6px;background:#fafafa;box-sizing:border-box;transition:border .3s ease;}
+.modal-box input:focus,.modal-box textarea:focus,.modal-box select:focus{border-color:#007bff;outline:none;box-shadow:0 0 0 2px rgba(0,123,255,.15);background:#fff;}
 
-.modal-box input,
-.modal-box textarea,
-.modal-box select {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fafafa;
-  box-sizing: border-box;
-  transition: border 0.3s ease;
-}
+.button-row{display:flex;justify-content:space-between;margin-top:1rem;gap:10px;}
+.button-row button{flex:1;padding:.75rem;font-size:1rem;font-weight:700;border:0;border-radius:6px;cursor:pointer;transition:all .2s ease;}
+.send-btn{background:#007bff;color:#fff;}
+.cancel-btn{background:#ccc;color:#000;}
+.button-row button:hover{opacity:.9;}
 
-.modal-box input:focus,
-.modal-box textarea:focus,
-.modal-box select:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
-  background: #fff;
-}
+.close-button{position:absolute;top:10px;right:15px;font-size:24px;color:#555;background:none;border:none;cursor:pointer;}
 
-.button-row {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-}
-
-.button-row button {
-  flex: 1;
-  margin: 0 5px;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.send-btn {
-  background-color: #007bff;
-  color: #fff;
-}
-
-.cancel-btn {
-  background-color: #ccc;
-  color: #000;
-}
-
-.button-row button:hover {
-  opacity: 0.9;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 24px;
-  color: #555;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
+/* Map modal helpers (used by AddressMapModal) */
+.modal-box.map-modal{max-width:920px;width:min(96vw,920px);}
+.map-wrapper{height:clamp(420px,70vh,720px);margin:.5rem 0;}
+.map-iframe{width:100%;height:100%;border:0;border-radius:8px;}
+.map-placeholder{padding:1rem;background:#f6f6f6;border-radius:8px;}

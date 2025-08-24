@@ -1,115 +1,19 @@
-/* ===== Reset & Base ===== */
-html, body, #root {
-  margin: 0; padding: 0;
-  height: 100%; width: 100%;
-  font-family: Arial, sans-serif;
-  overflow-x: hidden;
-}
-
-/* ===== App & Layout ===== */
-.main-content {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 2rem 1rem;
-  flex: 0 1 auto;
-  min-height: auto;
-}
-
-/* ===== Header, Footer, Logo ===== */
-.main-header, .main-footer {
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.main-header {
-  padding: 1.5rem 0;
-  font-size: 2.2rem;
-  font-weight: bold;
-  color: #000;
-}
-
-.header-subtitle {
-  font-size: 1rem;
-  color: #555;
-  margin-top: 0.3rem;
-}
-
-.main-footer {
-  margin-top: 0;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  color: #777;
-  background: transparent;
-}
-
-.logo {
-  font-size: 2.8rem;
-  font-weight: bold;
-  color: #000;
-}
-
-/* ===== Table Layout ===== */
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  margin-top: 1rem;
-}
-
-table {
-  width: 100%;
-  margin-top: 10px;
-  border-collapse: collapse;
-  background: #fff;
-  font-size: 0.95rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  table-layout: auto;
-}
-
-th, td {
-  border: 1px solid #ccc;
-  padding: 12px 16px;
-  text-align: left;
-  white-space: nowrap;
-}
-
-th {
-  background: #f1f3f5;
-  font-weight: 600;
-}
-
-/* ===== Views ===== */
-#adminView, #contractorView, #techView {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  text-align: left;
-  width: 100%;
-  max-width: 800px;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  gap: 20px;
-}
-
-/* ===== Job Status ===== */
-.status-cell {
-  font-weight: bold;
-  text-transform: capitalize;
-}
-
-.status-cell.pending { background: green; color: #fff; }
-.status-cell.in-progress { background: yellow; color: #000; }
-.status-cell.completed { background: red; color: #fff; }
-.status-cell.completed-pending-approval { background: orange; color: #fff; }
-.status-cell.approved { background: blue; color: #fff; }
-
-/* ===== Responsive ===== */
-@media (max-width: 600px) {
-  .main-content { flex-direction: column; padding: 1rem; }
-  .main-header { font-size: 1.5rem; padding: 1rem 0; }
-  .logo { font-size: 2rem; text-align: center; }
-  table { font-size: 0.85rem; }
-  table th, table td { padding: 8px 10px; }
-  .table-wrapper { -webkit-overflow-scrolling: touch; }
-}
+html,body,#root{margin:0;padding:0;height:100%;width:100%;font-family:Arial,sans-serif;overflow-x:hidden}
+.main-content{display:flex;justify-content:center;align-items:flex-start;padding:2rem 1rem;flex:0 1 auto;min-height:auto}
+.main-header,.main-footer{text-align:center;flex-shrink:0}
+.main-header{padding:1.5rem 0;font-size:2.2rem;font-weight:700;color:#000}
+.header-subtitle{font-size:1rem;color:#555;margin-top:.3rem}
+.main-footer{margin-top:0;padding:.5rem 1rem;font-size:.85rem;color:#777;background:transparent}
+.logo{font-size:2.8rem;font-weight:700;color:#000}
+.table-wrapper{width:100%;overflow-x:auto;margin-top:1rem}
+table{width:100%;margin-top:10px;border-collapse:collapse;background:#fff;font-size:.95rem;box-shadow:0 2px 6px rgba(0,0,0,.05);table-layout:auto}
+th,td{border:1px solid #ccc;padding:12px 16px;text-align:left;white-space:nowrap}
+th{background:#f1f3f5;font-weight:600}
+#adminView,#contractorView,#techView{display:none;flex-direction:column;align-items:center;text-align:left;width:100%;max-width:800px;padding:20px;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,.1);gap:20px}
+.status-cell{font-weight:700;text-transform:capitalize}
+.status-cell.pending{background:green;color:#fff}
+.status-cell.in-progress{background:yellow;color:#000}
+.status-cell.completed{background:red;color:#fff}
+.status-cell.completed-pending-approval{background:orange;color:#fff}
+.status-cell.approved{background:blue;color:#fff}
+@media (max-width:600px){.main-content{flex-direction:column;padding:1rem}.main-header{font-size:1.5rem;padding:1rem 0}.logo{font-size:2rem;text-align:center}table{font-size:.85rem}table th,table td{padding:8px 10px}.table-wrapper{-webkit-overflow-scrolling:touch}}
