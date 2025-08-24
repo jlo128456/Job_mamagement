@@ -1,5 +1,5 @@
 # seed_machines()
-from models.models import db, Machine
+from models import db, Machine
 
 def seed_machines():
     machines = [

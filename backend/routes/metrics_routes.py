@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from datetime import date, datetime
-from models.models import db, HoursMetric, User
+from models import db, HoursMetric, User
 
 metrics_routes = Blueprint("metrics_routes", __name__, url_prefix="/metrics")
 

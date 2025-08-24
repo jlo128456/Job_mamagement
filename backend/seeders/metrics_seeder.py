@@ -2,7 +2,7 @@
 import random
 from datetime import date, timedelta
 from app.app import app
-from models.models import db, User, HoursMetric
+from models import db, User, HoursMetric
 
 with app.app_context():
     users = User.query.all()

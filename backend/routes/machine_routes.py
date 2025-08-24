@@ -1,6 +1,6 @@
 # machine CRUD
 from flask import Blueprint, request, jsonify, current_app
-from models.models import db, Machine
+from models import db, Machine
 
 machine_routes = Blueprint("machine_routes", __name__, url_prefix="/machines")
 
