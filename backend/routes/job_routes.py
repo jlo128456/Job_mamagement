@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import current_user
 from models.models import db, Job, User, Machine
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 job_routes = Blueprint("job_routes", __name__, url_prefix="/jobs")
@@ -48,7 +48,17 @@ def create_job():
         payload = new_job.to_dict(); current_app.emit_job_events(payload)
         return jsonify(payload), 201
     except Exception as e:
+        current_app.logger.exception("Job POST failed")
         db.session.rollback(); return jsonify({"error": str(e)}), 400
+
+def _parse_iso_to_naive_utc(s: str, fallback: datetime):
+    try:
+        # Handle Z and offsets; store naive UTC to match other columns
+        t = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        if t.tzinfo: t = t.astimezone(timezone.utc).replace(tzinfo=None)
+        return t
+    except Exception:
+        return fallback
 
 @job_routes.route("/<int:job_id>", methods=["PATCH"], strict_slashes=False)
 def patch_job(job_id):
@@ -58,22 +68,28 @@ def patch_job(job_id):
     try:
         for f in ["customer_name","contact_name","travel_time","labour_hours","work_performed","status","contractor_status","signature"]:
             if f in d: setattr(job, f, d[f])
+
         if "checklist" in d:
             for k, v in (d.get("checklist") or {}).items():
                 a = f"checklist_{k}"
                 if hasattr(job, a): setattr(job, a, v)
+
         if d.get("status") == "Approved" and getattr(current_user, "role", "") != "admin":
             return jsonify({"error": "Only admin can approve"}), 403
-        if d.get("status") == "Completed": job.completion_date = now
+        if d.get("status") == "Completed":
+            job.completion_date = now
+
         if "onsite_time" in d:
-            try: job.onsite_time = datetime.fromisoformat(d["onsite_time"])
-            except: job.onsite_time = now
+            job.onsite_time = _parse_iso_to_naive_utc(str(d["onsite_time"]), now)
+
         if "machines" in d:
             m_raw = d["machines"]; m_ids = json.loads(m_raw) if isinstance(m_raw, str) else (m_raw or [])
             job.machines = Machine.query.filter(Machine.machine_id.in_(m_ids)).all() if m_ids else []
+
         job.status_timestamp = now
         db.session.commit()
         payload = job.to_dict(); current_app.emit_job_events(payload)
         return jsonify(payload), 200
     except Exception as e:
+        current_app.logger.exception("Job PATCH failed")
         db.session.rollback(); return jsonify({"error": str(e)}), 400

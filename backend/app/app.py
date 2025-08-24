@@ -22,19 +22,25 @@ CORS(app, supports_credentials=True, origins=ORIGINS,
      allow_headers=["Content-Type"])
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-local_db = f"sqlite:///{os.path.join(basedir,'database','job_management.db')}"
+local_db = f"sqlite:///{os.path.join(basedir, 'database', 'job_management.db')}"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", local_db)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app); Migrate(app, db)
 
-socketio = SocketIO(app, cors_allowed_origins=ORIGINS,
-    async_mode="eventlet", transports=["websocket"], allow_upgrades=False,
-    logger=True, engineio_logger=True)
+socketio = SocketIO(
+    app,
+    cors_allowed_origins=ORIGINS,
+    async_mode="eventlet",
+    transports=["websocket"],
+    allow_upgrades=False,
+    logger=True, engineio_logger=True,
+    ping_timeout=30, ping_interval=20,
+)
 
 @socketio.on("connect")
 def on_connect():
     app.logger.info(f"WS connect sid={request.sid}")
-    emit("server:welcome", {"msg":"connected"})
+    emit("server:welcome", {"msg": "connected"})
 
 @socketio.on("disconnect")
 def on_disconnect():
@@ -46,12 +52,14 @@ def on_job_join(data):
     app.logger.info(f"WS join sid={request.sid} job_id={jid}")
     if jid:
         join_room(f"job:{jid}")
-        emit("chat:system", {"msg":f"joined job:{jid}"})
+        emit("chat:system", {"msg": f"joined job:{jid}"})
 
 def emit_job_events(p: dict):
-    if not isinstance(p, dict): app.logger.warning("emit_job_events non-dict"); return
+    if not isinstance(p, dict):
+        app.logger.warning("emit_job_events non-dict"); return
     jid = p.get("id")
-    if jid is None: app.logger.warning("emit_job_events missing id"); return
+    if jid is None:
+        app.logger.warning("emit_job_events missing id"); return
     app.logger.info(f"Emit job events id={jid}")
     socketio.emit("job:updated", p, room=f"job:{jid}")
     socketio.emit("job:list:changed", {"id": jid}, broadcast=True)
@@ -64,16 +72,17 @@ from routes.machine_routes import machine_routes
 app.register_blueprint(job_routes); app.register_blueprint(user_routes); app.register_blueprint(machine_routes)
 
 @app.get("/health")
-def health(): app.logger.info("Health check"); return {"ok": True}, 200
+def health():
+    app.logger.info("Health check"); return {"ok": True}, 200
 
 @app.get("/")
-def index(): return {"message":"API is running."}, 200
+def index():
+    return {"message": "API is running."}, 200
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
-    app.logger.info("Starting Flask-SocketIO…")
-    app.logger.info(f"HTTP/WS: http://0.0.0.0:{port}  path:/socket.io")
+    app.logger.info(f"Starting Flask-SocketIO on http://0.0.0.0:{port} (path:/socket.io)")
     app.logger.info(f"Origins: {ORIGINS}")
     app.logger.info(f"DB URI : {app.config['SQLALCHEMY_DATABASE_URI']}")
     app.logger.info(f"Async  : {socketio.async_mode}")
-    socketio.run(app, host="0.0.0.0", port=port, debug=True)
+    socketio.run(app, host="0.0.0.0", port=port, debug=False, use_reloader=False)
