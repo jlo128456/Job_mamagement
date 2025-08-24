@@ -2,24 +2,30 @@
 import { io } from "socket.io-client";
 
 const URL =
-  process.env.REACT_APP_WS_URL || "http://localhost:5000"; // your Flask-SocketIO URL
+  process.env.REACT_APP_WS_URL ||
+  (window.location.hostname.includes("onrender.com")
+    ? "https://job-mamagement.onrender.com"
+    : "http://localhost:5000");
 
 export const socket = io(URL, {
-  transports: ["websocket"],   // WebSocket-only (no polling)
+  path: "/socket.io",          // explicit (default), helps behind proxies
+  transports: ["websocket"],   // WS-only
   upgrade: false,
   withCredentials: true,
   autoConnect: true,
   reconnection: true,
   reconnectionAttempts: 10,
   reconnectionDelay: 500,
-  // auth: { token: localStorage.getItem("token") } // <- if you pass auth
+  reconnectionDelayMax: 4000,  // backoff
+  timeout: 5000,               // fail fast if backend is down
 });
 
-// optional helpers
+// handy helpers
 export const joinJobRoom = (jobId) => socket.emit("job:join", { job_id: jobId });
+export const on = (event, handler) => { socket.off(event, handler); socket.on(event, handler); };
+export const once = (event, handler) => { const h = (...a)=>{ socket.off(event, h); handler(...a); }; socket.on(event, h); };
 
-// safe subscription helper to avoid duplicate handlers during HMR
-export const on = (event, handler) => {
-  socket.off(event, handler);
-  socket.on(event, handler);
-};
+// optional: debug logs
+socket.on("connect", () => console.log("WS connected", socket.id));
+socket.on("disconnect", (r) => console.log("WS disconnected:", r));
+socket.on("connect_error", (e) => console.warn("WS connect_error:", e.message));

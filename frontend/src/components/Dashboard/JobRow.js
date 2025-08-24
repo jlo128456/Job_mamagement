@@ -3,7 +3,7 @@ import { AppContext } from '../../context/AppContext';
 import { formatForDisplayLocal } from '../../utils/timeUtils';
 import { moveJobToInProgress } from '../../api/jobs';
 import { getStatusClass } from '../../utils/statusUtils';
-import AddressMapModal from '../modals/AddressMapModal'; // ← add this file if you haven't
+import AddressMapModal from '../modals/AddressMapModal';
 
 function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const { user } = useContext(AppContext);
@@ -16,18 +16,16 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const rawStatus = job?.contractor_status || job?.status || 'Unknown';
   const displayStatus =
     rawStatus === 'Approved' && (user?.role === 'contractor' || user?.role === 'technician')
-      ? 'Completed'
-      : rawStatus;
+      ? 'Completed' : rawStatus;
 
   const statusClass = `status-cell ${getStatusClass(displayStatus)}`;
+  const mapsUrl = job?.customer_address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address)}`
+    : '#';
 
   const handleOnsite = async () => {
-    try {
-      await moveJobToInProgress(job.id);
-      refreshJobs?.();
-    } catch (e) {
-      console.error('Failed to move job to In Progress', e);
-    }
+    try { await moveJobToInProgress(job.id); refreshJobs?.(); }
+    catch (e) { console.error('Failed to move job to In Progress', e); }
   };
 
   return (
@@ -37,14 +35,22 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
           {job.work_order}
         </td>
         <td>
-          <button
-            type="button"
-            onClick={() => setShowMap(true)}
-            style={{ background: 'none', border: 'none', padding: 0, textDecoration: 'underline', cursor: 'pointer' }}
-            title="Show location"
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={job.customer_address ? 'View location' : 'No address on file'}
+            onClick={(e) => {
+              // open modal by default; let modified-click open a new tab
+              if (!(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) {
+                e.preventDefault();
+                setShowMap(true);
+              }
+            }}
+            style={{ textDecoration: 'underline', cursor: 'pointer' }}
           >
             {job.customer_name}
-          </button>
+          </a>
         </td>
         <td>{requiredDate}</td>
         <td className={statusClass}>{displayStatus}</td>
@@ -62,6 +68,7 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
       {showMap && (
         <AddressMapModal
           address={job.customer_address}
+          name={job.customer_name}
           onClose={() => setShowMap(false)}
         />
       )}

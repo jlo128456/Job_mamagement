@@ -62,7 +62,7 @@ def emit_job_events(p: dict):
         app.logger.warning("emit_job_events missing id"); return
     app.logger.info(f"Emit job events id={jid}")
     socketio.emit("job:updated", p, room=f"job:{jid}")
-    socketio.emit("job:list:changed", {"id": jid}, broadcast=True)
+    socketio.emit("job:list:changed", {"id": jid})
 
 app.emit_job_events = emit_job_events
 

@@ -1,36 +1,58 @@
-// map function to open map modal (uses a portal)
+// src/components/modals/AddressMapModal.js
 import React from "react";
 import { createPortal } from "react-dom";
 
-function AddressMapModal({ address, onClose }) {
-  if (!address) return null;
-  const src = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
+function AddressMapModal({ address, name, onClose }) {
+  const query = (address || name || "").trim();
+  const src = query ? `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed` : null;
+  const mapsUrl = query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : "#";
 
   const node = (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-        <h3 style={{ marginBottom: 8 }}>Location</h3>
-        <p style={{ margin: "0 0 12px 0", opacity: 0.8 }}>{address}</p>
-        <div style={{ width: "100%", height: 360 }}>
-          <iframe
-            title="map"
-            src={src}
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+    <div className="modal-overlay overlay-opaque" onClick={onClose}>
+      <div
+        className="modal-container map-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Map location"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h3 className="modal-title">Location</h3>
+          <button className="modal-close" aria-label="Close" onClick={onClose}>×</button>
         </div>
-        <button style={{ marginTop: 12 }} onClick={onClose}>Close</button>
+
+        <p className="modal-subtitle">
+          {address || (name ? `No address on file — searching “${name}”.` : "No address available.")}
+        </p>
+
+        {src ? (
+          <div className="map-wrapper">
+            <iframe
+              title="Google Map"
+              src={src}
+              className="map-iframe"
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        ) : (
+          <div className="map-placeholder">Add a customer address to view a map.</div>
+        )}
+
+        <div className="modal-actions">
+          {query && (
+            <a className="btn" href={mapsUrl} target="_blank" rel="noopener noreferrer">
+              Open in Google Maps
+            </a>
+          )}
+          <button className="btn close-btn" onClick={onClose}>Close</button>
+        </div>
       </div>
     </div>
   );
 
-  // render outside the table to avoid hydration/DOM nesting errors
-  const target = document.getElementById("modal-root") || document.body;
-  return createPortal(node, target);
+  return createPortal(node, document.getElementById("modal-root") || document.body);
 }
 
 export default AddressMapModal;
