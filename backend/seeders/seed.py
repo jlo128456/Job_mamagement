@@ -6,6 +6,7 @@ from models import db  # Importing from the package root
 from seeders.user_seeder import seed_users
 from seeders.job_seeder import seed_jobs_detailed
 from seeders.machine_seeder import seed_machines
+from seeders.metrics_seeder import seed_hours_metrics
 
 def run_seed():
     with app.app_context():
@@ -15,6 +16,7 @@ def run_seed():
         contractors, technicians = seed_users()
         seed_jobs_detailed(contractors, technicians)
         seed_machines()
+        seed_hours_metrics() 
 
         db.session.commit()
         print("Database seeded successfully.")
