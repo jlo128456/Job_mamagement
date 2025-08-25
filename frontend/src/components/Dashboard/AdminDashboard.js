@@ -1,3 +1,4 @@
+// AdminDashboard.js
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { updateJobStatus } from '../../api/jobs';
@@ -6,7 +7,8 @@ import CreateJobModal from '../modals/CreateJobModal';
 import CompleteJobModal from '../Dashboard/CompleteJobsModal';
 import JobTable from '../Dashboard/JobTable';
 import { socket } from '../../socket-client';
-import HoursVsOnsiteChart from '../charts/HoursVsonsitChart'; // new chart feature
+import HoursVsOnsiteChart from '../charts/HoursVsonsitChart';
+import { fetchHoursMetrics } from '../../api/metrics';              // ← NEW
 
 function AdminDashboard({ onLogout }) {
   const { jobs, users, fetchJobs } = useContext(AppContext);
@@ -15,21 +17,28 @@ function AdminDashboard({ onLogout }) {
   const [showCompletedModal, setShowCompletedModal] = useState(false);
   const [dismissedIds, setDismissedIds] = useState([]);
   const [activeJobs, setActiveJobs] = useState([]);
+  const [metrics, setMetrics] = useState([]);                       // ← NEW
 
   useEffect(() => {
     const list = (Array.isArray(jobs) ? jobs : []).filter(j => !dismissedIds.includes(j.id));
-    const num = x => parseInt(String(x || '').replace(/\D/g, ''), 10) || 0;
-    setActiveJobs(list.sort((a, b) => num(a.work_order) - num(b.work_order)).filter(j => j.status !== 'Completed'));
+    const num = x => parseInt(String(x||'').replace(/\D/g,''),10) || 0;
+    setActiveJobs(list.sort((a,b)=>num(a.work_order)-num(b.work_order)).filter(j=>j.status!=='Completed'));
   }, [jobs, dismissedIds]);
 
   useEffect(() => {
-    fetchJobs?.(true);
-    const onChange = () => fetchJobs?.(true);
+    const load = async () => {
+      await fetchJobs?.(true);
+      try { setMetrics(await fetchHoursMetrics()); } catch (e) { console.error(e); }
+    };
+    load();
+    const onChange = () => load();
     socket.on('job:updated', onChange);
     socket.on('job:list:changed', onChange);
+    socket.on('metrics:hours:upsert', onChange);                    // ← optional if you emit this
     return () => {
       socket.off('job:updated', onChange);
       socket.off('job:list:changed', onChange);
+      socket.off('metrics:hours:upsert', onChange);
     };
   }, [fetchJobs]);
 
@@ -37,9 +46,8 @@ function AdminDashboard({ onLogout }) {
     try { await updateJobStatus(id, status); setModalJob(null); }
     catch (err) { console.error('Update failed:', err); }
   };
-
   const handleDismiss = id => setDismissedIds(p => [...p, id]);
-  const completed = (Array.isArray(jobs) ? jobs : []).filter(j => j.status === 'Completed' && !dismissedIds.includes(j.id));
+  const completed = (Array.isArray(jobs)?jobs:[]).filter(j => j.status==='Completed' && !dismissedIds.includes(j.id));
 
   return (
     <section className="dashboard-container">
@@ -52,12 +60,7 @@ function AdminDashboard({ onLogout }) {
         </div>
       </div>
 
-      <JobTable
-        jobs={activeJobs}
-        users={users}
-        onReviewClick={setModalJob}
-        onDismiss={handleDismiss}
-      />
+      <JobTable jobs={activeJobs} users={users} onReviewClick={setModalJob} onDismiss={handleDismiss} />
 
       {modalJob && (
         <AdminReviewModal
@@ -77,17 +80,12 @@ function AdminDashboard({ onLogout }) {
       )}
 
       {showCompletedModal && (
-        <CompleteJobModal
-          jobs={completed}
-          onDismiss={handleDismiss}
-          onClose={() => setShowCompletedModal(false)}
-        />
+        <CompleteJobModal jobs={completed} onDismiss={handleDismiss} onClose={() => setShowCompletedModal(false)} />
       )}
 
-      {/* Chart at the bottom */}
-      <HoursVsOnsiteChart jobs={jobs} users={users} />
+      {/* Move chart to the bottom & feed DB metrics */}
+      <HoursVsOnsiteChart jobs={jobs} users={users} metrics={metrics} />
     </section>
   );
 }
-
 export default AdminDashboard;
