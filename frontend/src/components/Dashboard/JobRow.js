@@ -5,6 +5,12 @@ import { moveJobToInProgress } from '../../api/jobs';
 import { getStatusClass } from '../../utils/statusUtils';
 import AddressMapModal from '../modals/AddressMapModal';
 
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL ||
+  (window.location.hostname.includes('onrender.com')
+    ? 'https://job-mamagement.onrender.com'
+    : 'http://127.0.0.1:5000');
+
 function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const { user } = useContext(AppContext);
   const [showMap, setShowMap] = useState(false);
@@ -22,6 +28,10 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const mapsUrl = job?.customer_address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address)}`
     : '#';
+
+  const tsrUrl = `${API_BASE_URL}/jobs/${job.id}/tsr.pdf`;
+  const canDownloadTSR =
+    /completed/i.test(job?.status || '') || job?.status === 'Approved' || job?.contractor_status === 'Completed';
 
   const handleOnsite = async () => {
     try { await moveJobToInProgress(job.id); refreshJobs?.(); }
@@ -41,10 +51,9 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
             rel="noopener noreferrer"
             title={job.customer_address ? 'View location' : 'No address on file'}
             onClick={(e) => {
-              // open modal by default; let modified-click open a new tab
               if (!(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) {
                 e.preventDefault();
-                setShowMap(true);
+                if (job.customer_address) setShowMap(true);
               }
             }}
             style={{ textDecoration: 'underline', cursor: 'pointer' }}
@@ -56,10 +65,22 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
         <td className={statusClass}>{displayStatus}</td>
         <td>{onsiteTime}</td>
         <td>{updatedTime}</td>
-        <td>
+        <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {job.status === 'Pending' && <button onClick={handleOnsite}>Onsite</button>}
           {job.status !== 'Completed' && job.status !== 'Completed - Pending Approval' && (
             <button onClick={onOpenModal}>Job Completed</button>
+          )}
+          {canDownloadTSR && (
+            <a
+              href={tsrUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-link"
+              style={{ textDecoration: 'underline' }}
+              title="Download TSR PDF"
+            >
+              Download TSR
+            </a>
           )}
           {job.status === 'Completed' && <button onClick={() => onDismiss?.(job.id)}>Dismiss</button>}
         </td>

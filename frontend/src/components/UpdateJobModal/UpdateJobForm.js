@@ -1,4 +1,5 @@
-import React from 'react';
+// UpdateJobForm.js
+import React, { useEffect } from 'react';
 
 const checklistItems = [
   { id: 'noMissingScrews', label: 'No Missing Screws' },
@@ -11,61 +12,63 @@ const fields = [
   { name: 'customer_name', placeholder: 'Customer Name' },
   { name: 'contact_name', placeholder: 'Contact Name' },
   { name: 'travel_time', placeholder: 'Travel Time (hrs)', type: 'number' },
-  { name: 'labour_hours', placeholder: 'Labour Hours', type: 'number' },
+  { name: 'labour_time',   placeholder: 'Labour Time (hrs)', type: 'number' },
 ];
 
 function UpdateJobForm({
-  form,
-  updateForm,
-  updateCheck,
-  onSubmit,
-  onClose,
-  canvasRef,
-  start,
-  move,
-  setDrawing,
+  form, updateForm, updateCheck, onSubmit, onClose,
+  canvasRef, start, move, setDrawing,
 }) {
+  //  set enforced status once (no dependency on updateForm)
+  useEffect(() => {
+    if (form.status !== 'Completed - Pending Approval') {
+      updateForm('status', 'Completed - Pending Approval');
+    }
+    if (form.contractor_status !== 'Completed') {
+      updateForm('contractor_status', 'Completed');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once when the form mounts
+
   return (
-    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {fields.map(({ name, placeholder, type = 'text' }) => (
+    <form onSubmit={onSubmit} style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+      {fields.map(({ name, placeholder, type='text' }) => (
         <input
           key={name}
           type={type}
           name={name}
-          value={form[name] || ''}
+          value={form[name]||''}
           placeholder={placeholder}
-          onChange={e => updateForm(name, e.target.value)}
+          onChange={e=>updateForm(name, e.target.value)}
         />
       ))}
 
       <textarea
         name="work_performed"
-        value={form.work_performed || ''}
-        onChange={e => updateForm('work_performed', e.target.value)}
-        placeholder="Work Performed"
         rows={4}
+        placeholder="Work Performed"
+        value={form.work_performed||''}
+        onChange={e=>updateForm('work_performed', e.target.value)}
       />
 
-      <select
-        name="status"
-        value={form.status || 'Pending'}
-        onChange={e => updateForm('status', e.target.value)}
-      >
-        <option>Pending</option>
-        <option>In Progress</option>
-        <option>Completed - Pending Approval</option>
-      </select>
+      {/* enforced hidden fields */}
+      <input type="hidden" name="status" value="Completed - Pending Approval" />
+      <input type="hidden" name="contractor_status" value="Completed" />
 
-      {checklistItems.map(({ id, label }) => (
-        <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <input
-            type="checkbox"
-            checked={form.checklist[id] || false}
-            onChange={e => updateCheck(id, e.target.checked)}
-          />
-          {label}
-        </label>
-      ))}
+      {/* compact 2x2 checklist */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 12px', alignItems:'center' }}>
+        {checklistItems.map(({ id, label }) => (
+          <label key={id} style={{ display:'flex', alignItems:'center', gap:8, fontSize:'.9rem' }}>
+            <input
+              type="checkbox"
+              style={{ width:14, height:14 }}
+              checked={form.checklist?.[id]||false}
+              onChange={e=>updateCheck(id, e.target.checked)}
+            />
+            <span style={{ lineHeight:1.2 }}>{label}</span>
+          </label>
+        ))}
+      </div>
 
       <canvas
         ref={canvasRef}
@@ -73,9 +76,9 @@ function UpdateJobForm({
         height={100}
         onMouseDown={start}
         onMouseMove={move}
-        onMouseUp={() => setDrawing(false)}
-        onMouseLeave={() => setDrawing(false)}
-        style={{ border: '1px solid #ccc', margin: '0 auto', touchAction: 'none' }}
+        onMouseUp={()=>setDrawing(false)}
+        onMouseLeave={()=>setDrawing(false)}
+        style={{ border:'1px solid #ccc', margin:'0 auto', touchAction:'none' }}
       />
 
       <div className="button-row">

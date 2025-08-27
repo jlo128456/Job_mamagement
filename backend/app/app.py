@@ -5,6 +5,7 @@ from models import db
 import os, sys, logging
 from routes.metrics_routes import metrics_routes
 from flask_socketio import SocketIO, emit, join_room
+from routes.pdf_routes import job_pdf_routes
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                     format='[%(asctime)s] %(levelname)s: %(message)s')
@@ -77,6 +78,7 @@ from routes.user_routes import user_routes
 from routes.machine_routes import machine_routes
 app.register_blueprint(job_routes); app.register_blueprint(user_routes); app.register_blueprint(machine_routes)
 app.register_blueprint(metrics_routes)
+app.register_blueprint(job_pdf_routes)
 
 @app.get("/health")
 def health():

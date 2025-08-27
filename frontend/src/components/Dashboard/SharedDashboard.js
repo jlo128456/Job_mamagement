@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo } from "react";
 import { AppContext } from "../../context/AppContext";
 import JobRow from "../Dashboard/JobRow";
 import UpdateJobModal from "../UpdateJobModal/UpdateJobModal";
@@ -22,17 +22,16 @@ function SharedDashboard({ role, onLogout, onComplete }) {
 
   const handleDismiss = (id) => setDismissedIds((p) => [...p, id]);
 
-  const filteredJobs = (Array.isArray(jobs) ? jobs : [])
-    .filter(
+  const filteredJobs = useMemo(() => {
+    const arr = Array.isArray(jobs) ? jobs : [];
+    const mine = arr.filter(
       (j) =>
         (j.assigned_contractor === user?.id || j.assigned_tech === user?.id) &&
         !dismissedIds.includes(j.id)
-    )
-    .sort(
-      (a, b) =>
-        parseInt(a.work_order?.replace(/\D/g, ""), 10) -
-        parseInt(b.work_order?.replace(/\D/g, ""), 10)
     );
+    const num = (wo) => parseInt(String(wo || "").replace(/\D/g, ""), 10) || 0;
+    return mine.sort((a, b) => num(a.work_order) - num(b.work_order));
+  }, [jobs, user?.id, dismissedIds]);
 
   return (
     <div className="dashboard-container">

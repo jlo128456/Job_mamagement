@@ -50,7 +50,7 @@ export default function HoursVsOnsiteChart({ jobs, users, metrics=[] }) {
                   <text x={cx} y={cy} transform={`rotate(-90, ${cx}, ${cy})`}
                         textAnchor="middle" fontSize={12} fontWeight={600}
                         fill="#334155" style={{ pointerEvents:"none" }}>
-                    Total hours over 6 months
+                    Total hours over 15 Days
                   </text>
                 );
               }}

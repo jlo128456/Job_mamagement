@@ -66,7 +66,7 @@ def patch_job(job_id):
     if not job: return jsonify({"error": "Job not found"}), 404
     d = request.get_json() or {}; now = datetime.utcnow()
     try:
-        for f in ["customer_name","contact_name","travel_time","labour_hours","work_performed","status","contractor_status","signature"]:
+        for f in ["customer_name","contact_name","travel_time","labour_time","work_performed","status","contractor_status","signature"]:
             if f in d: setattr(job, f, d[f])
 
         if "checklist" in d:
