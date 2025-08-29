@@ -27,6 +27,23 @@ CORS(app, supports_credentials=True, origins=ORIGINS,
      methods=["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
      allow_headers=["Content-Type","Authorization"])
 
+# Ensure CORS headers on ALL responses (incl. 404/500) and preflights
+@app.after_request
+def _add_cors_headers(resp):
+    o = request.headers.get("Origin")
+    if o and (o in ORIGINS or "*" in ORIGINS):
+        h = resp.headers
+        h["Access-Control-Allow-Origin"] = o
+        h["Access-Control-Allow-Credentials"] = "true"
+        h.setdefault("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        h.setdefault("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+        h["Vary"] = "Origin"
+    return resp
+
+@app.route("/", defaults={"_": ""}, methods=["OPTIONS"])
+@app.route("/<path:_>", methods=["OPTIONS"])
+def _preflight(_): return ("", 204)
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 local_db = f"sqlite:///{os.path.join(basedir,'database','job_management.db')}"
 db_url = os.getenv("DATABASE_URL", local_db)
