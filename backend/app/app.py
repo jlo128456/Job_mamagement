@@ -23,7 +23,7 @@ app = Flask(__name__); app.logger.setLevel(logging.INFO)
 parse_origins = lambda s: [o.strip() for o in s.split(",") if o.strip()] if s else []
 DEFAULT_ORIGINS = [
     "http://localhost:3000", "http://127.0.0.1:3000",
-    "https://contractorapp1.netlify.app", "https://job-mamagement.onrender.com",
+    "https://jobmanagment1.netlify.app", "https://job-mamagement.onrender.com",
 ]
 ORIGINS = parse_origins(os.getenv("CORS_ORIGINS")) or DEFAULT_ORIGINS
 
