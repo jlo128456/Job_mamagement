@@ -32,7 +32,7 @@ export default function HoursVsOnsiteChart({ jobs, users, metrics=[] }) {
 
   return (
     <div style={{marginTop:16,padding:"16px 12px 12px",borderRadius:12,background:"#fff",boxShadow:"0 6px 18px rgba(0,0,0,.08)"}}>
-      <h3 style={{margin:"0 0 10px",padding:"10px 12px 6px",lineHeight:1.25}}>Contractor / Technician: Hours vs Onsite</h3>
+      <h3 style={{margin:"0 0 10px",padding:"10px 12px 6px",lineHeight:1.25}}>Contractor / Technician: Labour Hours vs Onsite Time</h3>
       <ResponsiveContainer width="100%" height={340}>
         <BarChart data={data} barGap={6} barCategoryGap={24} margin={{top:28,right:16,left:56,bottom:18}}>
           <CartesianGrid strokeDasharray="4 4" opacity={0.4}/>
