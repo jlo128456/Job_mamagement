@@ -12,53 +12,32 @@ function AppContent() {
   const [role, setRole] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogin = (user) => {
-    if (user?.email && user?.role) {
-      setUser(user);
-      setRole(user.role);
-      navigate(`/${user.role}`);
-    } else {
-      alert("Login failed");
-    }
+  const handleLogin = (u) => {
+    if (u?.email && u?.role) { setUser(u); setRole(u.role); navigate(`/${u.role}`); }
+    else alert("Login failed");
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setRole(null);
-    navigate('/login');
-  };
+  const handleLogout = () => { setUser(null); setRole(null); navigate('/'); }; // ← no /login
 
   const handleJobComplete = (id) => alert(`Job ${id} marked complete.`);
 
   return (
-    <div
-      className="app-container"
-      style={{
-        backgroundImage: "url('/img/mound2.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <div className="app-container" style={{
+      backgroundImage:"url('/img/mound2.png')", backgroundSize:'cover', backgroundPosition:'center',
+      backgroundRepeat:'no-repeat', minHeight:'100vh', display:'flex', flexDirection:'column'
+    }}>
       <Header />
-      <main className="main-content" style={{ flex: 1, padding: '1rem' }}>
+      <main className="main-content" style={{ flex:1, padding:'1rem' }}>
         <Routes>
-          <Route path="/login" element={<LoginModal onLogin={handleLogin} />} />
+          <Route path="/" element={<LoginModal onLogin={handleLogin} />} /> {/* ← login at root */}
           {user && role === 'admin' && <Route path="/admin" element={<AdminDashboard onLogout={handleLogout} />} />}
           {user && role === 'contractor' && (
-            <Route path="/contractor" element={
-              <SharedDashboard role="contractor" onLogout={handleLogout} onComplete={handleJobComplete} />
-            } />
+            <Route path="/contractor" element={<SharedDashboard role="contractor" onLogout={handleLogout} onComplete={handleJobComplete} />} />
           )}
           {user && role === 'technician' && (
-            <Route path="/technician" element={
-              <SharedDashboard role="technician" onLogout={handleLogout} onComplete={handleJobComplete} />
-            } />
+            <Route path="/technician" element={<SharedDashboard role="technician" onLogout={handleLogout} onComplete={handleJobComplete} />} />
           )}
-          <Route path="*" element={<Navigate to={user ? `/${role}` : '/login'} />} />
+          <Route path="*" element={<Navigate to={user ? `/${role}` : '/'} replace />} /> {/* ← no /login */}
         </Routes>
       </main>
       <Footer />
