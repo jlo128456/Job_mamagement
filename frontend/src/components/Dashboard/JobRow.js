@@ -5,11 +5,8 @@ import { moveJobToInProgress } from '../../api/jobs';
 import { getStatusClass } from '../../utils/statusUtils';
 import AddressMapModal from '../modals/AddressMapModal';
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL ||
-  (window.location.hostname.includes('onrender.com')
-    ? 'https://job-mamagement.onrender.com'
-    : 'http://127.0.0.1:5000');
+const PROD="https://job-mamagement.onrender.com", LOCAL="http://127.0.0.1:5000", USE_LOCAL=process.env.REACT_APP_USE_LOCAL==="1";
+const API_BASE_URL=(process.env.REACT_APP_API_BASE_URL||(USE_LOCAL||/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)?LOCAL:PROD)).replace(/\/$/,"");
 
 function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const { user } = useContext(AppContext);
@@ -20,43 +17,29 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
   const updatedTime  = job?.status_timestamp ? formatForDisplayLocal(job.status_timestamp) : 'Not Updated';
 
   const rawStatus = job?.contractor_status || job?.status || 'Unknown';
-  const displayStatus =
-    rawStatus === 'Approved' && (user?.role === 'contractor' || user?.role === 'technician')
-      ? 'Completed' : rawStatus;
+  const displayStatus = rawStatus === 'Approved' && (user?.role === 'contractor' || user?.role === 'technician') ? 'Completed' : rawStatus;
 
   const statusClass = `status-cell ${getStatusClass(displayStatus)}`;
-  const mapsUrl = job?.customer_address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address)}`
-    : '#';
-
+  const mapsUrl = job?.customer_address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer_address)}` : '#';
   const tsrUrl = `${API_BASE_URL}/jobs/${job.id}/tsr.pdf`;
-  const canDownloadTSR =
-    /completed/i.test(job?.status || '') || job?.status === 'Approved' || job?.contractor_status === 'Completed';
+  const canDownloadTSR = /completed/i.test(job?.status || '') || job?.status === 'Approved' || job?.contractor_status === 'Completed';
 
-  const handleOnsite = async () => {
-    try { await moveJobToInProgress(job.id); refreshJobs?.(); }
-    catch (e) { console.error('Failed to move job to In Progress', e); }
-  };
+  const handleOnsite = async () => { try { await moveJobToInProgress(job.id); refreshJobs?.(); } catch(e){ console.error('Failed to move job to In Progress', e); } };
+
+  if (!job) return null;
 
   return (
     <>
       <tr>
-        <td style={{ cursor: 'pointer' }} onClick={() => alert(`Work Required: ${job.work_required}`)}>
-          {job.work_order}
-        </td>
+        <td style={{cursor:'pointer'}} onClick={() => alert(`Work Required: ${job.work_required}`)}>{job.work_order}</td>
         <td>
           <a
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             title={job.customer_address ? 'View location' : 'No address on file'}
-            onClick={(e) => {
-              if (!(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) {
-                e.preventDefault();
-                if (job.customer_address) setShowMap(true);
-              }
-            }}
-            style={{ textDecoration: 'underline', cursor: 'pointer' }}
+            onClick={e => { if(!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)){ e.preventDefault(); if(job.customer_address) setShowMap(true);} }}
+            style={{ textDecoration:'underline', cursor:'pointer' }}
           >
             {job.customer_name}
           </a>
@@ -65,34 +48,14 @@ function JobRow({ job, refreshJobs, onOpenModal, onDismiss }) {
         <td className={statusClass}>{displayStatus}</td>
         <td>{onsiteTime}</td>
         <td>{updatedTime}</td>
-        <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {job.status === 'Pending' && <button onClick={handleOnsite}>Onsite</button>}
-          {job.status !== 'Completed' && job.status !== 'Completed - Pending Approval' && (
-            <button onClick={onOpenModal}>Job Completed</button>
-          )}
-          {canDownloadTSR && (
-            <a
-              href={tsrUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-link"
-              style={{ textDecoration: 'underline' }}
-              title="Download TSR PDF"
-            >
-              Download TSR
-            </a>
-          )}
-          {job.status === 'Completed' && <button onClick={() => onDismiss?.(job.id)}>Dismiss</button>}
+        <td style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+          {job.status==='Pending' && <button onClick={handleOnsite}>Onsite</button>}
+          {job.status!=='Completed' && job.status!=='Completed - Pending Approval' && <button onClick={onOpenModal}>Job Completed</button>}
+          {canDownloadTSR && <a href={tsrUrl} target="_blank" rel="noopener noreferrer" className="btn-link" style={{ textDecoration:'underline' }} title="Download TSR PDF">Download TSR</a>}
+          {job.status==='Completed' && <button onClick={() => onDismiss?.(job.id)}>Dismiss</button>}
         </td>
       </tr>
-
-      {showMap && (
-        <AddressMapModal
-          address={job.customer_address}
-          name={job.customer_name}
-          onClose={() => setShowMap(false)}
-        />
-      )}
+      {showMap && <AddressMapModal address={job.customer_address} name={job.customer_name} onClose={() => setShowMap(false)} />}
     </>
   );
 }
