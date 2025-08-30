@@ -23,11 +23,14 @@ parse = lambda s: [o.strip() for o in s.split(",") if o.strip()] if s else []
 DEFAULT_ORIGINS = ["http://localhost:3000","http://127.0.0.1:3000","https://jobmanagment1.netlify.app","https://job-mamagement.onrender.com"]
 ORIGINS = parse(os.getenv("CORS_ORIGINS")) or DEFAULT_ORIGINS
 
+# allow cookies cross-site
+app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True, SESSION_COOKIE_HTTPONLY=True)
+
 CORS(app, supports_credentials=True, origins=ORIGINS,
      methods=["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
-     allow_headers=["Content-Type","Authorization"])
+     allow_headers=["Content-Type","Authorization","X-Requested-With","Accept"])
 
-# Ensure CORS headers on ALL responses (incl. 404/500) and preflights
+# Ensure CORS headers on ALL responses (incl. 404/500) + preflights
 @app.after_request
 def _add_cors_headers(resp):
     o = request.headers.get("Origin")
@@ -35,8 +38,9 @@ def _add_cors_headers(resp):
         h = resp.headers
         h["Access-Control-Allow-Origin"] = o
         h["Access-Control-Allow-Credentials"] = "true"
-        h.setdefault("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        h.setdefault("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept")
         h.setdefault("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+        h.setdefault("Access-Control-Max-Age", "86400")
         h["Vary"] = "Origin"
     return resp
 

@@ -1,3 +1,4 @@
+// src/components/modals/LoginModal.jsx
 import React, { useState, useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 import SignupModal from './SignupModal';
@@ -10,31 +11,39 @@ function LoginModal({ onLogin }) {
   const [showSignup, setShowSignup] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
 
-  const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async e => {
+  // First try a "simple request" (x-www-form-urlencoded) to avoid CORS preflight.
+  // If backend requires JSON (415), fall back to JSON.
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.email || !form.password) return setError('Please fill in both fields.');
     setError('');
+
+    const url = `${API_BASE_URL}/users/login`;
+    const formBody = new URLSearchParams(form); // browser sets Content-Type to application/x-www-form-urlencoded
+    const jsonBody = JSON.stringify(form);
+
     try {
-      const res = await fetch(`${API_BASE_URL}/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!res.ok) setError(data.error || 'Login failed');
-      else onLogin(data);
+      let res = await fetch(url, { method: 'POST', credentials: 'include', body: formBody });
+      if (res.status === 415) {
+        res = await fetch(url, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: jsonBody,
+        });
+      }
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json().catch(() => null) : null;
+      if (!res.ok) return setError((data && (data.error || data.message)) || `Login failed (${res.status})`);
+      onLogin(data || {});
     } catch {
-      setError('Network error');
+      setError('Network/CORS error. Please try again.');
     }
   };
 
-  const handleSignup = newUser => {
-    onLogin(newUser);
-    setShowSignup(false);
-  };
+  const handleSignup = (newUser) => { onLogin(newUser); setShowSignup(false); };
 
   return (
     <>
@@ -43,8 +52,8 @@ function LoginModal({ onLogin }) {
           <h1>Login</h1>
           <p className="login-subtitle">Please enter your credentials</p>
           <form onSubmit={handleSubmit}>
-            <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-            <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
+            <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required autoComplete="email" />
+            <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required autoComplete="current-password" />
             <button type="submit" className="login-btn">Login</button>
             {error && <p className="error-msg">{error}</p>}
           </form>
