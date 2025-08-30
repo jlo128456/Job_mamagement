@@ -1,3 +1,4 @@
+// src/context/AppContext.js
 import React, { createContext, useEffect, useRef, useReducer, useCallback } from 'react';
 import { socket } from '../socket-client';
 
@@ -6,11 +7,10 @@ export const AppContext = createContext();
 const PROD_API  = "https://job-mamagement.onrender.com";
 const LOCAL_API = "http://127.0.0.1:5000";
 const USE_LOCAL = process.env.REACT_APP_USE_LOCAL === "1";
-
-const getBaseUrl = (base) =>
+const pickBase  = (base) =>
   (base || process.env.REACT_APP_API_BASE_URL || (USE_LOCAL ? LOCAL_API : PROD_API)).replace(/\/$/, '');
 
-const initialState = { API_BASE_URL: getBaseUrl(), user: null, jobs: [], users: [], timezone: '' };
+const initialState = { API_BASE_URL: pickBase(), user: null, jobs: [], users: [], timezone: '' };
 const reducer = (s, a) => ({ ...s, [a.type]: a.payload });
 
 export function AppProvider({ children }) {
@@ -18,25 +18,33 @@ export function AppProvider({ children }) {
   const jobsRef = useRef(state.jobs);
   useEffect(() => { jobsRef.current = state.jobs; }, [state.jobs]);
 
+  const fetchJson = useCallback(async (path, opts) => {
+    const res = await fetch(`${state.API_BASE_URL}${path}`, { credentials: 'include', ...opts });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return res.json();
+  }, [state.API_BASE_URL]);
+
   const fetchJobs = useCallback(async () => {
     try {
-      const r = await fetch(`${state.API_BASE_URL}/jobs`, { credentials: 'include' });
-      dispatch({ type: 'jobs', payload: r.ok ? await r.json() : [] });
-    } catch (e) { console.error('Fetch jobs failed', e); }
-  }, [state.API_BASE_URL]);
+      const data = await fetchJson('/jobs');
+      dispatch({ type: 'jobs', payload: Array.isArray(data) ? data : [] });
+    } catch (e) { console.error('Fetch /jobs failed', e); }
+  }, [fetchJson]);
 
   const fetchUsers = useCallback(async () => {
     try {
-      const r = await fetch(`${state.API_BASE_URL}/users`, { credentials: 'include' });
-      if (r.ok) dispatch({ type: 'users', payload: await r.json() });
-    } catch (e) { console.error('Fetch users failed', e); }
-  }, [state.API_BASE_URL]);
+      const data = await fetchJson('/users');
+      dispatch({ type: 'users', payload: Array.isArray(data) ? data : [] });
+    } catch (e) { console.error('Fetch /users failed', e); }
+  }, [fetchJson]);
 
+  // initial load
   useEffect(() => {
     dispatch({ type: 'timezone', payload: Intl.DateTimeFormat().resolvedOptions().timeZone });
     fetchJobs(); fetchUsers();
   }, [fetchJobs, fetchUsers]);
 
+  // socket-driven updates
   useEffect(() => {
     const onListChanged = () => fetchJobs();
     const onJobUpdated = (job) => {

@@ -17,12 +17,9 @@ function CreateJobModal({ isOpen, onClose, onJobCreated }) {
       fetch(`${API_BASE_URL}/users/staff`).then(res => res.ok && res.json()),
       fetch(`${API_BASE_URL}/machines`).then(res => res.ok && res.json())
     ])
-      .then(([u, m]) => {
-        if (u) setUsers(u);
-        if (m) setMachines(m);
-      })
+      .then(([u, m]) => { if (u) setUsers(u); if (m) setMachines(m); })
       .catch(console.error);
-  }, [isOpen]);
+  }, [isOpen, API_BASE_URL]); // include API_BASE_URL
 
   useEffect(() => {
     if (!isOpen) return;
@@ -68,7 +65,7 @@ function CreateJobModal({ isOpen, onClose, onJobCreated }) {
       const newJob = await res.json();
       setJobs(p => [...p, newJob]);
       localStorage.setItem("jobUpdated", Date.now());
-      onJobCreated?.(); // notify parent to refresh/reset filters
+      onJobCreated?.();
       onClose();
       setFormData({ work_order: "", customer_name: "", customer_address: "", assigned_user_id: "", required_date: "", work_required: "", machines: [] });
     } catch {
