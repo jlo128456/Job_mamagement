@@ -8,6 +8,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_socketio import SocketIO, emit, join_room
+from sqlalchemy.pool import NullPool
 from models import db
 from routes.metrics_routes import metrics_routes
 from routes.pdf_routes import job_pdf_routes
@@ -16,32 +17,26 @@ from routes.user_routes import user_routes
 from routes.machine_routes import machine_routes
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='[%(asctime)s] %(levelname)s: %(message)s')
-
 app = Flask(__name__); app.logger.setLevel(logging.INFO)
 
 parse = lambda s: [o.strip() for o in s.split(",") if o.strip()] if s else []
 DEFAULT_ORIGINS = ["http://localhost:3000","http://127.0.0.1:3000","https://jobmanagment1.netlify.app","https://job-mamagement.onrender.com"]
 ORIGINS = parse(os.getenv("CORS_ORIGINS")) or DEFAULT_ORIGINS
 
-# allow cookies cross-site
 app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True, SESSION_COOKIE_HTTPONLY=True)
-
 CORS(app, supports_credentials=True, origins=ORIGINS,
      methods=["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
      allow_headers=["Content-Type","Authorization","X-Requested-With","Accept"])
 
-# Ensure CORS headers on ALL responses (incl. 404/500) + preflights
 @app.after_request
 def _add_cors_headers(resp):
     o = request.headers.get("Origin")
     if o and (o in ORIGINS or "*" in ORIGINS):
         h = resp.headers
-        h["Access-Control-Allow-Origin"] = o
-        h["Access-Control-Allow-Credentials"] = "true"
+        h["Access-Control-Allow-Origin"] = o; h["Access-Control-Allow-Credentials"] = "true"
         h.setdefault("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept")
         h.setdefault("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-        h.setdefault("Access-Control-Max-Age", "86400")
-        h["Vary"] = "Origin"
+        h.setdefault("Access-Control-Max-Age", "86400"); h["Vary"] = "Origin"
     return resp
 
 @app.route("/", defaults={"_": ""}, methods=["OPTIONS"])
@@ -51,8 +46,12 @@ def _preflight(_): return ("", 204)
 basedir = os.path.abspath(os.path.dirname(__file__))
 local_db = f"sqlite:///{os.path.join(basedir,'database','job_management.db')}"
 db_url = os.getenv("DATABASE_URL", local_db)
-if db_url.startswith("postgres://"): db_url = db_url.replace("postgres://","postgresql://",1)
-app.config.update(SQLALCHEMY_DATABASE_URI=db_url, SQLALCHEMY_TRACK_MODIFICATIONS=False)
+if db_url.startswith("postgres://"): db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif db_url.startswith("postgresql://") and "+psycopg" not in db_url: db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+app.config.update(SQLALCHEMY_DATABASE_URI=db_url, SQLALCHEMY_TRACK_MODIFICATIONS=False,
+                  SQLALCHEMY_ENGINE_OPTIONS={"poolclass": NullPool})
+
 db.init_app(app); Migrate(app, db)
 
 socketio = SocketIO(app, async_mode=ASYNC_MODE, cors_allowed_origins=ORIGINS,
